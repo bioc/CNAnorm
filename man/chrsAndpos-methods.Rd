@@ -10,7 +10,7 @@
 \alias{pos<--methods}
 \title{ Accessors methods for Function ratio in Package `CNAnorm' }
 \description{
-\code{chrs} returns/set the name of chromosomes/contigues 
+\code{chrs} returns/set the name of chromosomes/contigs
 
 \code{pos} returns/set the position of starting window. \bold{Be careful!} 
 If you need to change data, it is better to change the input data and start over.

@@ -8,7 +8,7 @@
 \alias{valid.peaks-methods}
 \alias{valid.ploidy}
 \alias{valid.ploidy-methods}
-\title{ Methods for Function to retreive suggested/validated ploidy and peaks in Package `CNAnorm' }
+\title{ Methods for Function to retrieve suggested/validated ploidy and peaks in Package `CNAnorm' }
 \description{
 \code{sugg.peaks} returns the location of peaks before normalization as 
     suggested by \code{peakPloidy}.

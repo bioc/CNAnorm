@@ -1,10 +1,11 @@
 \name{CN}
 \docType{data}
 \alias{CN}
-\title{A CNAnorm object with information about most abbundant ploidy states, obtained from data LS041 }
+\title{A CNAnorm object with information about most abundant ploidy states, obtained from data LS041. }
+
 \description{
-This data is to provide an object to use in several example without having to wait for computing it.
-To see how it was generated, see documentation of function peakPloidy 
+This data is to provide an object to use in several examples without having to wait for computing it.
+To see how it was generated, see documentation of function peakPloidy.
 }
 \usage{data(CN)}
 \format{A CNAnorm object}

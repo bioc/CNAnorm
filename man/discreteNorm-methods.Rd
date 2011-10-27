@@ -15,12 +15,18 @@
 
 \arguments{
  
-\item{object}{An object of Class \code{"CNAnorm"} to tormalized}
+\item{object}{An object of Class \code{"CNAnorm"} to normalize}
 \item{normBy}{An object of Class \code{"CNAnorm"} used to set normalization.
-    It is possible, for instance, a sample at high resolution, using information
+    It is possible, for instance, to normalize a sample at high resolution, using information
     obtained from the same sample at low resolution}
         
 }
+
+\references{ Gusnanto, A., Wood, H.M., Pawitan, Y., Rabbitts, P. and Berri, S.
+(2011) \emph{Correcting for cancer genome size and tumour cell content enables
+better estimation of copy number alterations from next generation sequence
+data.} Bioinformatics}
+
 
 \value{An object of class \code{"CNAnorm"}}
 

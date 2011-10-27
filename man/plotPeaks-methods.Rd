@@ -24,9 +24,9 @@
     \code{"suggested"}, \code{"validated"}. Specify what need to be plotted
 }
 \item{adjust}{ The adjust parameter for function \code{"density"}. Default will 
-retreive the values use for \code{peakPloidy}}
+retrieve the values use for \code{peakPloidy}}
 \item{n}{ The n parameter for function \code{"density"}. Default will 
-retreive the values use for \code{peakPloidy}}
+retrieve the values use for \code{peakPloidy}}
 \item{...}{Further arguments to pass to the function \code{plot}}
         
 }

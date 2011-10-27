@@ -384,7 +384,7 @@ specialDensity <- function (object, special, adjust, n) {
     return (Dn)
 }
 
-selectGoodGuess <- function (Density, MQRDS, spacingTollerance, interceptRatio, 
+selectGoodGuess <- function (Density, MQRDS, spacingTolerance, interceptRatio, 
     possiblePloidy, peakRatio, peakSpan){
 
     
@@ -399,7 +399,7 @@ selectGoodGuess <- function (Density, MQRDS, spacingTollerance, interceptRatio,
 
     # select max R, positive intercept, highest peak is on ploidy == 2
     # which possible ploidy has max R
-    maxR <- MQRDS[,1] >= max(MQRDS[,1])*spacingTollerance
+    maxR <- MQRDS[,1] >= max(MQRDS[,1])*spacingTolerance
     # which possible ploidy would have a positive intercept?
     positiveIntercept <- MQRDS[,2] >= interceptRatio
     # which possible ploidy has the highest peak either on 2?
@@ -425,13 +425,13 @@ selectGoodGuess <- function (Density, MQRDS, spacingTollerance, interceptRatio,
     # "elasticity". Recursive function.
     if (length(which(goodGuess)) == 0) {
         return (logical(0))
-#             warning("No possible solutions. deacreasing parameter 'spacingTollerance'")
-#             spacingTollerance = spacingTollerance * .95
+#             warning("No possible solutions. deacreasing parameter 'spacingTolerance'")
+#             spacingTolerance = spacingTolerance * .95
 #             cnaList <- guessPeaksAndPloidy(cnaList, smooth = smooth, 
 #                 excludeFromDensity = excludeFromDensity, 
 #                 peakRatio = peakRatio, ploidyToTest = ploidyToTest, 
 #                 peakSpan = peakSpan  , adjust = adjust,
-#                 spacingTollerance = spacingTollerance , interceptRatio = interceptRatio) 
+#                 spacingTolerance = spacingTolerance , interceptRatio = interceptRatio) 
 #             return (cnaList)
     }
 
@@ -569,7 +569,7 @@ ratio2use <- function(object){
 # }
 
 # .peaksAndPloidy <- function (object, method = "mixture", exclude = character(0),
-#     peakRatio = 50, ploidyToTest = 14, spacingTollerance = .999,
+#     peakRatio = 50, ploidyToTest = 14, spacingTolerance = .999,
 #     interceptRatio = -0.1, quantile = 99.5, sd = 5, ...){
 #     
 #     }
@@ -578,7 +578,7 @@ ratio2use <- function(object){
 ## function called by the Method (setMethod)
 
 .guessPeaksAndPloidy <- function (object, ok4density = rep(TRUE, length(object)),
-    peakRatio = 50, ploidyToTest = 14, spacingTollerance = .999,         
+    peakRatio = 50, ploidyToTest = 14, spacingTolerance = .999,         
     interceptRatio = -0.1, adjust = 0.9, n = 2048) {
   
     # a variable that should not be changed
@@ -617,18 +617,18 @@ ratio2use <- function(object){
         
         # MQRDS actually contains R shift and scale
         MQRDS <- MQRDS(MQR)
-        goodGuess <- selectGoodGuess(Density, MQRDS, spacingTollerance, 
+        goodGuess <- selectGoodGuess(Density, MQRDS, spacingTolerance, 
             interceptRatio, possiblePloidy, peakRatio, peakSpan)
 
         # here, in same rare cases, it happens that no solutions are
         # available. Rerun using a smaller threshold to allow some
         # "elasticity". Recursive function.
         if (length(goodGuess) == 0) {
-            warning("No possible solutions. deacreasing parameter 'spacingTollerance'")
-            spacingTollerance = spacingTollerance * .95
+            warning("No possible solutions. deacreasing parameter 'spacingTolerance'")
+            spacingTolerance = spacingTolerance * .95
             object <- .guessPeaksAndPloidy(object, ok4density = ok4density, 
                 peakRatio = peakRatio, ploidyToTest = ploidyToTest,
-                spacingTollerance = spacingTollerance , 
+                spacingTolerance = spacingTolerance , 
                 interceptRatio = interceptRatio, adjust = adjust, n = n)
                 
             return(object)

@@ -1,5 +1,6 @@
 %\VignetteIndexEntry{An introduction to CNAnorm}
 \documentclass[a4paper]{article}
+\usepackage{natbib}
 
 \title{CNAnorm: A package for normalization of CNA sequencing data}
 \author{Stefano Berri}
@@ -8,14 +9,19 @@
 
 \maketitle
 
-CNAnorm is a package for the analysis of Copy Number Alteration (CNA) of tumour samples
-using low coverage (around 0.01 - 0.5X) high throughput sequencing.
-In particular, CNAnorm aims to perform a meaningful \emph{normalisation} of the sample
-by estimation of the underlying tumour's ploidy.
+CNAnorm is a package for the analysis of Copy Number Alteration (CNA) of tumor samples
+using low coverage (around 0.01 - 0.5X) high throughput sequencing\cite{gusnanto2011a}.
+In particular, CNAnorm aims to perform a meaningful \emph{normalization} of the sample
+by estimation of the underlying tumor's ploidy.
 CNAnorm allows both a fully automated as well as an interactive approach to the
 normalization step. If the user has some external ``clues'' about the ploidy of
-the genome, it is possible to manually inform CNAnorm and then perform the normalisation.
+the genome, it is possible to manually inform CNAnorm and then perform the normalization.
 CNAnorm also provides a method to plot the normalised genome.
+
+For more information and the original data, see the authors' website.
+\\
+\\
+\verb@http://www.precancer.leeds.ac.uk/cnanorm/@
 
 
 \section{Input data}
@@ -28,29 +34,33 @@ data(LS041)
 LS041[1:5,]
 @
 
+The input data can be produced from sam/bam files using the perl script \verb@bam2windows.pl@
+that you can obtain from the authors' website. There you can also find the bam
+files used to produce the dataframe LS041.
+
 The first step is to create an object of class CNAnorm with the input data.
 The input data consists of number of reads in test and control for a variable number of 
 \textbf{constant width windows}. Chromosome/contig name and the starting
 position of each window must be provided as well.
 GC content for each window is optional.
-If the data is in a data.frame like LS041, the easiest is to use the function
-\emph{dataFrame2object} to create a new object
+If the data is in a dataframe like LS041, the easiest is to use the function
+\emph{dataFrame2object} to create a new object.
 
 <<>>=
 CN <- dataFrame2object(LS041)
 @
 
 Because of difficulty in correctly mapping reads on chromosome
-Y and M, we can flag them (toghether with the mitocondrial chromosome) and not to use
-them for the (optional) GC correction or ploidy detection
+Y and M, we can flag them (together with the mitochondrial chromosome) and not to use
+them for the (optional) GC correction or ploidy detection.
 
 <<>>=
 toSkip <- c("chrY", "chrM")
 CN <- gcNorm(CN, exclude = toSkip)
 @
 
-It is then strongly recomended to smooth the signal to decrease noise without
-losing resolution 
+It is then strongly recommended to smooth the signal\cite{huang2007a} to decrease noise without
+losing resolution.
 
 <<>>=
 CN <- addSmooth(CN, lambda = 7)
@@ -62,7 +72,7 @@ It is now possible to estimate peaks and ploidy.
 CN <- peakPloidy(CN, exclude = toSkip)
 @
 
-We can now visualise the distribution of reads and the suggested ploidy
+We can now visualise the distribution of reads and the suggested ploidy.
 
 \begin{center}
 <<fig=TRUE,echo=TRUE>>=
@@ -70,33 +80,33 @@ plotPeaks(CN, special1 = 'chrX', special2 = 'chrY')
 @
 \end{center}
 
-At this point, we can accept the suggestion of CNAnorm
+At this point, we can accept the suggestion of CNAnorm.
 
 <<>>=
 CN.default <- validation(CN)
 @
 
-or, if there is a reason - for instance from FISH - to believe that the ploidy
-is actually one copy more than suggested, we can correct the suggestion
+However, if there is a reason - for instance from FISH - to believe that the ploidy
+is actually one copy more than suggested, we can correct the suggestion.
 <<>>=
 CN <- validation(CN, ploidy = (sugg.ploidy(CN) + 1) )
 @
 
 If we want to plot DNAcopy segments and discrete ploidy value, before the
-normalisation we need to add the DNAcopy information
+normalization we need to add the DNAcopy information.
 
 <<>>=
 CN <- addDNACopy(CN)
 CN <- discreteNorm(CN)
 @
 
-Finally, we can plot the whole genome 
+Finally, we can plot the whole genome.
 
 <<fig=TRUE, echo=TRUE>>=
 plotGenome(CN, superimpose = 'DNACopy')
 @
 
-or a subset of it
+Or just a subset of it.
 
 <<fig=TRUE, echo=TRUE>>=
 toPlot <- c('chr10', 'chr11', 'chr12')
@@ -104,10 +114,13 @@ subSet <- chrs(CN) %in% toPlot
 plotGenome(CN[subSet], superimpose = 'DNACopy')
 @
 
-Finally, we can export results in a table-like format
+Finally, we can export results in a table-like format.
 <<>>=
 exportTable(CN, file = "CNAnorm_table.tab", show = 'ploidy')
 @
+
+\bibliographystyle{plain}
+\bibliography{ref}
 
 \end{document}
 

@@ -4,31 +4,35 @@
 \alias{DerivData-class}
 \alias{length,DerivData-method}
 \title{Class "DerivData"}
-\description{ A Class containing data derived from InData used for further computation and plottting}
+\description{ A Class containing data derived from InData used for further computation and plotting.}
 \section{Objects from the Class}{
-Objects can be created by calls of the form \code{new("DerivData")}, however DerivData is tipically 
+Objects can be created by calls of the form \code{new("DerivData")}, however DerivData is typically 
 populated using methods. If a slot has not been populated yet, it has zero length, otherwise slots
-have the same length as \code{InData}
+have the same length as \code{InData}.
 }
 \section{Slots}{
   \describe{
-    \item{\code{ratio}:}{Numeric vector with ratio Test/Normal. Optionally GC corrected}
+    \item{\code{ratio}:}{Numeric vector with ratio Test/Normal. Optionally GC corrected.}
     \item{\code{ratio.s}:}{Numeric vector with smoothed ratio.}
     \item{\code{ratio.n}:}{Numeric vector with normalized ratio.}
-    \item{\code{ratio.s.n}:}{Numeric vector with normalized and smoothed ratio}
+    \item{\code{ratio.s.n}:}{Numeric vector with normalized and smoothed ratio.}
     \item{\code{segID}:}{Numeric vecotr with ID of segmented data (as provided by DNACopy).
         Each \code{segment} has a different ID.}
-    \item{\code{segMean}:}{Numeric vector with mean value of the segment (as provided by DNACopy)}
+    \item{\code{segMean}:}{Numeric vector with mean value of the segment (as provided by DNACopy.)}
     \item{\code{segMean.n}:}{Numeric vector with normalized segMean.}
-    \item{\code{ok4density}:}{Logical vector. Specify wich values have been used to calculate density}
+    \item{\code{ok4density}:}{Logical vector. Specify wich values have been used to calculate density.}
   }
 }
 \section{Methods}{
   \describe{
-    \item{length}{\code{signature(x = "DerivData")}: Returns number of windows}
+    \item{length}{\code{signature(x = "DerivData")}: Returns number of windows.}
 	 }
 }
-\references{ To be added }
+\references{Gusnanto, A., Wood, H.M., Pawitan, Y., Rabbitts, P. and Berri, S.
+(2011) \emph{Correcting for cancer genome size and tumor cell content enables
+better estimation of copy number alterations from next generation sequence
+data.} Bioinformatics} 
+
 \author{ Stefano Berri and Arief Gusnanto }
 
 
@@ -37,8 +41,9 @@ have the same length as \code{InData}
 }
 \examples{
 data(LS041)
-inObject <- new("InData", Chr = as.character(LS041$Chr), Pos = LS041$Pos,
-    Test = LS041$Test, Norm = LS041$Norm, GC = LS041$GC)
+inObject <- new("InData", Chr = as.character(LS041$Chr), 
+    Pos = LS041$Pos, Test = LS041$Test, Norm = LS041$Norm, 
+    GC = LS041$GC)
 CNA <- new("CNAnorm", InData = inObject) 
 }
 \keyword{classes}

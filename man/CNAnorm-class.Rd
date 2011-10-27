@@ -46,7 +46,7 @@ Objects can be created by calls of the form \code{new("CNAnorm", InData)}.
     \item{chrs}{\code{signature(object = "CNAnorm")}: Retrieve Chromosomes/contig name }
     \item{chrs<-}{\code{signature(object = "CNAnorm")}: Set Chromosomes/contig name }
     \item{guessPeaksAndPloidy}{\code{signature(object = "CNAnorm")}: Estimate ploidy 
-        of the sample, tumour content and other results saved in Slot \code{"Res"} }
+        of the sample, tumor content and other results saved in Slot \code{"Res"} }
     \item{length}{\code{signature(x = "CNAnorm")}: Returns number of element/windows }
     \item{[}{\code{signature(x = "CNAnorm")}: Produce on object of class \code{"CNAnorm"} with a subser of windows }
     \item{plotGenome}{\code{signature(object = "CNAnorm")}: Plot annotated normalized genome copy number }

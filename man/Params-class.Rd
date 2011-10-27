@@ -4,25 +4,25 @@
 \alias{Params-class}
 
 \title{Class "Params"}
-\description{ A Class containing some Parameters used in the analysis. Not heavily used at the moment}
+\description{ A Class containing some Parameters used in the analysis. Not heavily used at the moment.}
 \section{Objects from the Class}{
 Objects can be created by calls of the form \code{new("Params")}, it is usually
-    iniziated and populated with methods and functions of class \code{CNAnorm}
+    iniziated and populated with methods and functions of class \code{CNAnorm}.
 }  
 \section{Slots}{
   \describe{
     \item{\code{method}:}{variable of class \code{"character"}. Record if the \code{peakPloidy}
-    function was called using \code{density} or \code{mixture}}
-    \item{\code{density.n}:}{The varaible \code{"n"} used when calling \code{peakPloidy}. 
-        This variable is saved so that can be used later for drawing plots}
-    \item{\code{density.adjust}:}{The varaible \code{"adjust"} used when calling \code{peakPloidy}. 
+    function was called using \code{density} or \code{mixture}.}
+    \item{\code{density.n}:}{The variable \code{"n"} used when calling \code{peakPloidy}. 
+        This variable is saved so that can be used later for drawing plots.}
+    \item{\code{density.adjust}:}{The variable \code{"adjust"} used when calling \code{peakPloidy}. 
         This variable is saved so that can be used later for drawing plots}
     \item{\code{gc.excludeFromGCNorm}:}{Vector of class \code{"character"}.
-    Name of the Chromosomes/Contigues not used for GC content correction.}
+    Name of the Chromosomes/Contigs not used for GC content correction.}
     \item{\code{gc.maxNumPoints}:}{One element vector of class \code{"numeric"}. 
     Specify how many points to use for GC correction }
     \item{\code{gp.excludeFromDensity}:}{Vector of class \code{"character"}. 
-    Name of the Chromosomes/Contigues not used for peak guessing }
+    Name of the Chromosomes/Contigs not used for peak guessing }
   }
 }
 \section{Methods}{
@@ -30,7 +30,12 @@ Objects can be created by calls of the form \code{new("Params")}, it is usually
     \item{length}{\code{signature(x = "Params")}}
 	 }
 }
-\references{ To be added }
+
+\references{Gusnanto, A., Wood, H.M., Pawitan, Y., Rabbitts, P. and Berri, S.
+(2011) \emph{Correcting for cancer genome size and tumor cell content enables
+better estimation of copy number alterations from next generation sequence
+data.} Bioinformatics } 
+
 \author{ Stefano Berri}
 
 
