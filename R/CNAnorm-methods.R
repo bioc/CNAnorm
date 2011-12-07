@@ -1106,19 +1106,28 @@ mapPeaks <- function(map, peaks) {
     } else {
         mulP <- 1/roundPloidy
     }
-    if (length(segMean(object)) == length(ratio.s.n(object))){
+
+
+    numEl <- length(chrs(object))
+    if (length(segMean(object)) == numEl){
         SegMean <- segMean(object) * mulP
         SegMean.n <- segMean.n(object) * mulP
     } else {
         SegMean <- rep(NA, length(ratio.s.n(object)))
         SegMean.n <- rep(NA, length(ratio.s.n(object)))
     }
+    if (length(ratio.s.n(object)) == numEl){
+        Ratio.s.n = ratio.s.n(object) * mulP
+    } else {
+        Ratio.s.n = rep(NA, numEl)
+    }
+
     df <- data.frame(
         Chr = chrs(object),
         Pos = pos(object),
         Ratio = ratio(object),
         Ratio.n = ratio.n(object) * mulP,
-        Ratio.s.n = ratio.s.n(object) * mulP,
+        Ratio.s.n = Ratio.s.n,
         SegMean = SegMean,
         SegMean.n = SegMean.n
     )
