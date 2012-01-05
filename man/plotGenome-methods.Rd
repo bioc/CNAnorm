@@ -12,7 +12,7 @@
 \usage{
 \S4method{plotGenome}{CNAnorm}(object, maxRatio = 8, minRatio = -1,
     superimpose = character(0),  supLineColor = character(0),
-    supLineCex = character(0), numHorLables = 10, ...)
+    supLineCex = character(0), numHorLables = 10, colorful = FALSE, ...)
 }
 
 \arguments{
@@ -33,6 +33,9 @@
     superimposed line}. If none is provided, defaults are: c(0.5, 0.5) }
 \item{numHorLables}{. Number of maximum horizontal lables. The function will try
     to annotate numHorLables so that they are approximately equally spaced.}
+\item{colorful}{A switch to decide if the background dots representing the 
+    ratio of each window should be gray or colored according their value in 
+    relation to the peak closest to the median}
 \item{...}{Further arguments to pass to the function \code{plot}}
         
 }

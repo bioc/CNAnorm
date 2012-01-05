@@ -73,14 +73,14 @@
 
 .plotGenome <- function (object, maxRatio = 8, minRatio = -1, 
     superimpose = character(0),  supLineColor = character(0), 
-    supLineCex = character(0), numHorLables = 10, ...) {
+    supLineCex = character(0), numHorLables = 10, colorful = FALSE, ...) {
     # superimpose can be one of the following: "DNAcopy" or "smooth"    
 
     if (length(ratio.n(object)) == 0){
         stop("Object does not contains normalized ratio\n")
     }
 
-    defaultColors <- c("black", "cyan", 'grey60')
+    defaultColors <- c("black", "cyan", 'grey60', 'blue', 'red', 'darkgreen')
     defaultsLineCex <- c(.5, .5)
     par(mar=c(5, 4, 4, 5))
     
@@ -104,13 +104,26 @@
     yRange[2] <- yRange[2] + 0.1
 
     plot(xRange, yRange, type = 'n', xlab = "", xaxt="n", yaxt="n", ylab="", ...) 
-    lines(xAxes[where], ratio.n(object)[where], type = 'p', cex = .5, pch=19, 
-        col = defaultColors[3])
+    if (colorful){
+        AllX <- xAxes[where]
+        AllY <- ratio.n(object)[where]
+        onlyLossX <- AllX[AllY < object@Res@validated.closestPeak]
+        onlyLossY <- AllY[AllY < object@Res@validated.closestPeak]
+        onlyGainX <- AllX[AllY >= object@Res@validated.closestPeak]
+        onlyGainY <- AllY[AllY >= object@Res@validated.closestPeak]
+        lines(onlyLossX, onlyLossY, type = 'p', cex = .5, pch=19, 
+            col = defaultColors[4])
+        lines(onlyGainX, onlyGainY, type = 'p', cex = .5, pch=19, 
+            col = defaultColors[5])
+    } else {
+        lines(xAxes[where], ratio.n(object)[where], type = 'p', cex = .5, pch=19, 
+            col = defaultColors[3])
+    }
     if (length(outOfPlotPlus) > 0) {
         lines(xAxes[outOfPlotPlus], yAxesoutOfPlotPlus + 0.1, pch = 2, 
-            cex = .5, type = 'p', col = 'red')
+            cex = .5, type = 'p', col = defaultColors[6])
         lines(xAxes[outOfPlotMinus], yAxesoutOfPlotMinus - 0.1, pch = 6, 
-            cex = .5, type = 'p', col = 'red')
+            cex = .5, type = 'p', col = defaultColors[6])
     }
     # numDots <- length(where)
     xTickWidth <- numDots/(numHorLables + 1)
@@ -142,7 +155,7 @@
     allChr <- chrs(object)
     chrChange <- c(1, which(allChr[1:length(allChr)-1] != 
         allChr[2:length(allChr)]), length(allChr))
-    abline(v = chrChange, col = 'red')
+    abline(v = chrChange, col = defaultColors[1] )
     xAxisLab <- paste(xAxisLab, "Chromosomes") 
     
     abline(h = object@Res@validated.closestPeak, col = 'gray20', lwd = 2)
@@ -911,6 +924,7 @@ plotPeaksMixture <- function (object, special1 = character(0), special2 = charac
     mth <- object@Params@method
     ##### THIS IS WHERE THE FUNCTION DOES NOT WORK ANYMORE FOR MIXTURE MODEL...
     ### check into peakBol
+    # browser()
     if (mth == 'density'){
         peakBol <- (X %in% peakX) & object@Res@notExcluded.isAPeak
         ww <- which(peakBol)    
