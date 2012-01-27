@@ -30,7 +30,28 @@ means that the most abbundant ``state'' is centered to 1}
 
 \value{An object of class \code{"CNAnorm"}}
 
+\details{It produces a tab delimited text file with the following columns:
+
+    Chr: Chromosome/contig name.
+
+    Pos: Starting position of the window.
+    
+    Ratio: Ratio Test/Normal for each window after GC correction.
+    
+    Ratio.n: Ratio Test/Normal or ploidy for each window after normalisation.
+    
+    Ratio.s.n: Smoothed and normalised ratio Test/Normal or ploidy for each window.
+    
+    SegMean: Mean of the segment this window belongs to.
+    
+    SegMean.n: Normalised mean ratio Test/Normal or ploidy of the segment this window belongs to.
+
+
+}
+    
+
 \author{Stefano Berri \email{s.berri@leeds.ac.uk}} 
+
 \examples{
 data(CN)
 CN <- validation(CN)

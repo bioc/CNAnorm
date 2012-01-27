@@ -1124,7 +1124,7 @@ mapPeaks <- function(map, peaks) {
 
     numEl <- length(chrs(object))
     if (length(segMean(object)) == numEl){
-        SegMean <- segMean(object) * mulP
+        SegMean <- 2^segMean(object)
         SegMean.n <- segMean.n(object) * mulP
     } else {
         SegMean <- rep(NA, length(ratio.s.n(object)))
