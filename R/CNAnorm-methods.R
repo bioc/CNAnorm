@@ -189,7 +189,7 @@
     # force.smooth = TRUE, reg=FALSE, ds=1.5, zero.cont=FALSE, ...) {
     force.smooth = TRUE, reg=FALSE, ds=1.5, zero.cont=FALSE, ...) {
    
-    whatM <- checkMethod(method, c('mixture', 'density'))
+    whatM <- checkMethod(method, c('mixture', 'density', 'median', 'mode'))
     # check if we have smoothed signal...
 #     if (length(ratio.s(object)) == 0 & force.smooth){
 #         message("smoothing ratio...")
@@ -201,8 +201,17 @@
     isOutlier <- findOutliers(ratio, sd, dThresh, n = n, adjust = adjust)
     ok4density <- (! chrName %in% exclude) & (! isOutlier) & (! is.na(ratio))
     if (whatM == 'density'){
-        object <- .guessPeaksAndPloidy(object, ok4density = ok4density, ...)
+        object <- .guessPeaksAndPloidy(object, ok4density = ok4density, n = n, 
+            adjust = adjust)
         object@Params@method = 'density'
+    } else if (whatM == 'median'){
+        object <- .simplePeaks(object, ok4density = ok4density, method = 'median', 
+            n = n, adjust = adjust)
+        object@Params@method = 'median'
+    } else if (whatM == 'mode'){
+        object <- .simplePeaks(object, ok4density = ok4density, method = 'median', 
+            n = n, adjust = adjust)
+        object@Params@method = 'mode'
     } else if (whatM == 'mixture') {
         options(show.error.messages = FALSE)
         sk <- try(suggest.k(ratio[ok4density], chrName[ok4density], np = seq(3, ploidyToTest, by = 1), 
@@ -261,6 +270,79 @@
 
 
 }
+
+
+
+
+.simplePeaks <- function (object, ok4density = rep(TRUE, length(object)), 
+    method = 'median', n = 2048, adjust = 0.9, peakRatio = 50){
+    
+    # a variable that should not be changed
+    peakSpan = 3
+    
+    ratio <- ratio2use(object)
+    chrName <- chrs(object)
+
+    interpDiploidXloc = NA
+    Density <- density(ratio[ok4density], adjust = adjust, n = n)
+    isApeak <- myPeaks(Density$y, span = peakSpan)
+    peakPos <- which(isApeak)
+    peakValues <- Density$y[peakPos]
+    highPeaks <- isApeak & (Density$y >= max(peakValues/peakRatio))
+
+    if (method == 'mode'){
+        scaling <- 1/Density$x[highPeaks]
+        interpDiploidXloc <- Density$x[highPeaks]
+        MQR <- data.frame(M = Density$x[highPeaks]/2, Q = 0, R = 1)
+        suggPeak <- Density$x[highPeaks]
+    } else if (method == 'median'){
+        thisMedian <- median (ratio[ok4density], na.rm = TRUE)
+        scaling <- 1/thisMedian
+        interpDiploidXloc <- thisMedian
+        MQR <- data.frame(M = thisMedian/2, Q = 0, R = 1)
+        suggPeak <- thisMedian
+    
+    } else {
+        stop ("Wrong 'method'. Acceptables values: 'median' or 'mode'")
+    }
+    PP <- 2
+    content = "Unknown"
+    
+    
+    ratioMedian <- median(ratio, na.rm = TRUE)
+    peakX <- Density$x[highPeaks]
+    peakBol <- (Density$x %in% peakX) & highPeaks
+    medianPeaksIndex <- which(abs(Density$x[peakBol]-ratioMedian)  ==  
+        min(abs(Density$x[peakBol]-ratioMedian), na.rm = TRUE))
+    peakClosestToMedian <- Density$x[peakBol][medianPeaksIndex] 
+
+#     if (PP[Density$x[highPeaks] == peakClosestToMedian] == 0 
+#             & PP[length(PP)] == ploidyToTest){
+#         PP <- PP + 2
+#     } else if (PP[Density$x[highPeaks] == peakClosestToMedian] == 1
+#             & PP[length(PP)] == ploidyToTest) {
+#         PP <- PP + 1
+#     }
+
+
+    object@Res@suggested.ploidy         <- PP
+    object@Res@suggested.peaks          <- suggPeak
+    object@Res@suggested.tumContent     <- content
+    object@Res@interpDiploidXloc        <- interpDiploidXloc
+    object@Res@notExcluded.density      <- Density
+    object@Res@notExcluded.isAPeak      <- highPeaks
+    object@Res@ratioMedian              <- ratioMedian
+    object@Res@closestPeak              <- suggPeak
+    object@Res@MQR                      <- MQR
+    object@Res@suggested.R              <- signif(MQR$R, 4)
+    
+    # object@Params@gp.excludeFromDensity <- exclude
+    return(object)
+
+
+
+}
+
 
 findOutliers <- function(ratio, sd, dThresh, ...){
     s <- median(ratio, na.rm = TRUE) + sd * sd(ratio, na.rm = TRUE)
@@ -591,7 +673,7 @@ ratio2use <- function(object){
 ## function called by the Method (setMethod)
 
 .guessPeaksAndPloidy <- function (object, ok4density = rep(TRUE, length(object)),
-    peakRatio = 50, ploidyToTest = 14, spacingTolerance = .999,         
+    peakRatio = 50, ploidyToTest = 14, spacingTolerance = .99,         
     interceptRatio = -0.1, adjust = 0.9, n = 2048) {
   
     # a variable that should not be changed
@@ -793,6 +875,7 @@ ratio2use <- function(object){
 
     return (object)    
 }
+
 makeTextLabels <- function (xLoc, Ploidy) {
     if (length(xLoc) != length(Ploidy)) {
         stop ("xLoc and Ploidy must have the same length")

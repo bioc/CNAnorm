@@ -19,7 +19,11 @@
 \item{object}{An object of Class \code{"CNAnorm"}}
 \item{exclude}{A character vector with names of Chromosomes/Contigs
     \bold{not} to use to estimate ploidy.}
-\item{method}{A character element matching either \code{"mixture"} or \code{"density"}.
+\item{method}{A character element matching either \code{"mixture"}, \code{"density"},
+    \code{"median"} or \code{"mode"}. \code{"mixture"} will fit a mixture model to find
+    peaks; \code{"density"} will use the density function to find peaks; \code{"median"} 
+    and \code{"mode"} will only find one peak at the median or mode. No tumour content
+    or reliable estimated ploidy will be provided.
     Non ambigous partial matches can be used.}
 \item{ploidyToTest}{Maximum ploidy allowed. \bold{Warnings!} Computation time
     increases exponentially with this parameter if using \code{"density"}.}

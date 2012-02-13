@@ -1,3 +1,4 @@
+1.1.5: Added methods 'median' and 'mode' to to function peakPloidy for a "standard" normalisation
 1.1.4: Fixed an error in exportTable which was providing a meaningless value for SegMean
 1.1.3: Changed the provided data (LS041 and CN) to match what bam2windows.pl version 0.3.4
 1.1.2: Added an option to plot more colorful genome plots 
