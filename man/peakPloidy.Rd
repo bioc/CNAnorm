@@ -20,10 +20,16 @@
 \item{exclude}{A character vector with names of Chromosomes/Contigs
     \bold{not} to use to estimate ploidy.}
 \item{method}{A character element matching either \code{"mixture"}, \code{"density"},
-    \code{"median"} or \code{"mode"}. \code{"mixture"} will fit a mixture model to find
-    peaks; \code{"density"} will use the density function to find peaks; \code{"median"} 
-    and \code{"mode"} will only find one peak at the median or mode. No tumour content
-    or reliable estimated ploidy will be provided.
+    \code{"median"}, \code{"mode"} or \code{"closest"}. \code{"mixture"} will
+    fit a mixture model to find peaks; \code{"density"} will use the density
+    function to find peaks; \code{"median"} \code{"mode"} and \code{"closest"}
+    will only find one peak at the median, mode or peak closest to the median
+    respectively. No tumour content or reliable estimated ploidy will be
+    provided. These methods are ment to perform a more ``standard''
+    normalisation, without stratching the data. Suggested for germline CNV 
+    or a fully automated process that does not requires a normalisation on
+    integer copy number or for highly heterogeneous sample where such normalisation
+    would not be possible.
     Non ambigous partial matches can be used.}
 \item{ploidyToTest}{Maximum ploidy allowed. \bold{Warnings!} Computation time
     increases exponentially with this parameter if using \code{"density"}.}
