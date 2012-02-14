@@ -1,9 +1,9 @@
 Package: CNAnorm
-Version: 1.1.5
-Date: 2012-02-13
-Title: A normalization method for Copy Number Aberration in cancer samples.
+Version: 1.1.6
+Date: 2012-02-14
+Title: A normalization method for Copy Number Aberration in cancer samples
 Author: Stefano Berri <s.berri@leeds.ac.uk>, Henry M. Wood
-    <H.M.Wood@leeds.ac.uk>, and Arief Gusnanto <a.gusnanto@leeds.ac.uk>.  
+    <H.M.Wood@leeds.ac.uk>, Arief Gusnanto <a.gusnanto@leeds.ac.uk>
 Maintainer: Stefano Berri <s.berri@leeds.ac.uk>
 Depends: R (>= 2.10.1), DNAcopy, methods
 Description: Performs ratio, GC content correction and normalization of 

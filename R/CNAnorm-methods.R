@@ -188,8 +188,9 @@
     ploidyToTest = 12, sd = 5, dThresh = 0.01, n = 2048, adjust = 0.9, 
     # force.smooth = TRUE, reg=FALSE, ds=1.5, zero.cont=FALSE, ...) {
     force.smooth = TRUE, reg=FALSE, ds=1.5, zero.cont=FALSE, ...) {
-   
-    whatM <- checkMethod(method, c('mixture', 'density', 'median', 'mode'))
+    
+    densityBasedMethods <- c('density', 'median', 'mode', 'closest')
+    whatM <- checkMethod(method, c('mixture', densityBasedMethods))
     # check if we have smoothed signal...
 #     if (length(ratio.s(object)) == 0 & force.smooth){
 #         message("smoothing ratio...")
@@ -200,18 +201,10 @@
     ratio <- ratio2use(object)
     isOutlier <- findOutliers(ratio, sd, dThresh, n = n, adjust = adjust)
     ok4density <- (! chrName %in% exclude) & (! isOutlier) & (! is.na(ratio))
-    if (whatM == 'density'){
+    if (whatM %in% densityBasedMethods){
         object <- .guessPeaksAndPloidy(object, ok4density = ok4density, n = n, 
-            adjust = adjust)
-        object@Params@method = 'density'
-    } else if (whatM == 'median'){
-        object <- .simplePeaks(object, ok4density = ok4density, method = 'median', 
-            n = n, adjust = adjust)
-        object@Params@method = 'median'
-    } else if (whatM == 'mode'){
-        object <- .simplePeaks(object, ok4density = ok4density, method = 'median', 
-            n = n, adjust = adjust)
-        object@Params@method = 'mode'
+            adjust = adjust, method = whatM)
+        object@Params@method = whatM
     } else if (whatM == 'mixture') {
         options(show.error.messages = FALSE)
         sk <- try(suggest.k(ratio[ok4density], chrName[ok4density], np = seq(3, ploidyToTest, by = 1), 
@@ -270,79 +263,6 @@
 
 
 }
-
-
-
-
-.simplePeaks <- function (object, ok4density = rep(TRUE, length(object)), 
-    method = 'median', n = 2048, adjust = 0.9, peakRatio = 50){
-    
-    # a variable that should not be changed
-    peakSpan = 3
-    
-    ratio <- ratio2use(object)
-    chrName <- chrs(object)
-
-    interpDiploidXloc = NA
-    Density <- density(ratio[ok4density], adjust = adjust, n = n)
-    isApeak <- myPeaks(Density$y, span = peakSpan)
-    peakPos <- which(isApeak)
-    peakValues <- Density$y[peakPos]
-    highPeaks <- isApeak & (Density$y >= max(peakValues/peakRatio))
-
-    if (method == 'mode'){
-        scaling <- 1/Density$x[highPeaks]
-        interpDiploidXloc <- Density$x[highPeaks]
-        MQR <- data.frame(M = Density$x[highPeaks]/2, Q = 0, R = 1)
-        suggPeak <- Density$x[highPeaks]
-    } else if (method == 'median'){
-        thisMedian <- median (ratio[ok4density], na.rm = TRUE)
-        scaling <- 1/thisMedian
-        interpDiploidXloc <- thisMedian
-        MQR <- data.frame(M = thisMedian/2, Q = 0, R = 1)
-        suggPeak <- thisMedian
-    
-    } else {
-        stop ("Wrong 'method'. Acceptables values: 'median' or 'mode'")
-    }
-    PP <- 2
-    content = "Unknown"
-    
-    
-    ratioMedian <- median(ratio, na.rm = TRUE)
-    peakX <- Density$x[highPeaks]
-    peakBol <- (Density$x %in% peakX) & highPeaks
-    medianPeaksIndex <- which(abs(Density$x[peakBol]-ratioMedian)  ==  
-        min(abs(Density$x[peakBol]-ratioMedian), na.rm = TRUE))
-    peakClosestToMedian <- Density$x[peakBol][medianPeaksIndex] 
-
-#     if (PP[Density$x[highPeaks] == peakClosestToMedian] == 0 
-#             & PP[length(PP)] == ploidyToTest){
-#         PP <- PP + 2
-#     } else if (PP[Density$x[highPeaks] == peakClosestToMedian] == 1
-#             & PP[length(PP)] == ploidyToTest) {
-#         PP <- PP + 1
-#     }
-
-
-    object@Res@suggested.ploidy         <- PP
-    object@Res@suggested.peaks          <- suggPeak
-    object@Res@suggested.tumContent     <- content
-    object@Res@interpDiploidXloc        <- interpDiploidXloc
-    object@Res@notExcluded.density      <- Density
-    object@Res@notExcluded.isAPeak      <- highPeaks
-    object@Res@ratioMedian              <- ratioMedian
-    object@Res@closestPeak              <- suggPeak
-    object@Res@MQR                      <- MQR
-    object@Res@suggested.R              <- signif(MQR$R, 4)
-    
-    # object@Params@gp.excludeFromDensity <- exclude
-    return(object)
-
-
-
-}
-
 
 findOutliers <- function(ratio, sd, dThresh, ...){
     s <- median(ratio, na.rm = TRUE) + sd * sd(ratio, na.rm = TRUE)
@@ -674,7 +594,7 @@ ratio2use <- function(object){
 
 .guessPeaksAndPloidy <- function (object, ok4density = rep(TRUE, length(object)),
     peakRatio = 50, ploidyToTest = 14, spacingTolerance = .99,         
-    interceptRatio = -0.1, adjust = 0.9, n = 2048) {
+    interceptRatio = -0.1, adjust = 0.9, n = 2048, method = 'density') {
   
     # a variable that should not be changed
     peakSpan = 3
@@ -684,73 +604,11 @@ ratio2use <- function(object){
     chrName <- chrs(object)
     
     interpDiploidXloc = NA
-    # isOutlier <- findOutliers(ratio, quantile, sd)
-    # ok4density <- (! chrName %in% exclude) & (! isOutlier) & (! is.na(ratio))
-    
-
-
-#     Density <- myDensity(ratio[ok4density], adjust = adjust),
     Density <- density(ratio[ok4density], adjust = adjust, n = n)
     isApeak <- myPeaks(Density$y, span = peakSpan)
     peakPos <- which(isApeak)
     peakValues <- Density$y[peakPos]
     highPeaks <- isApeak & (Density$y >= max(peakValues/peakRatio))
-
-    if (length(which(highPeaks)) == 1) { # only one peak, scale but don't shift (impossible to calculate )
-        scaling <- 1/Density$x[highPeaks]
-        interpDiploidXloc <- Density$x[highPeaks]
-        MQR <- data.frame(M = Density$x[highPeaks]/2, Q = 0, R = 1)
-    } else {
-        possibleMatrix <- possibleBinNumbers(ploidyToTest+1, length(which(highPeaks)))
-        # make table with ploidy
-        possiblePloidy <- matrix(NA, length(possibleMatrix[,1]), length(which(highPeaks)))
-        for (n in 1:length(possibleMatrix[,1]) ) {
-            possiblePloidy[n,] <- which(possibleMatrix[n,]==1) - 1
-        }
-        peakToUse <- Density$x[highPeaks]
-        MQR <- MQR(possibleMatrix, ploidyToTest, peakToUse)
-        
-        # MQRDS actually contains R shift and scale
-        MQRDS <- MQRDS(MQR)
-        goodGuess <- selectGoodGuess(Density, MQRDS, spacingTolerance, 
-            interceptRatio, possiblePloidy, peakRatio, peakSpan)
-
-        # here, in same rare cases, it happens that no solutions are
-        # available. Rerun using a smaller threshold to allow some
-        # "elasticity". Recursive function.
-        if (length(goodGuess) == 0) {
-            warning("No possible solutions. deacreasing parameter 'spacingTolerance'")
-            spacingTolerance = spacingTolerance * .95
-            object <- .guessPeaksAndPloidy(object, ok4density = ok4density, 
-                peakRatio = peakRatio, ploidyToTest = ploidyToTest,
-                spacingTolerance = spacingTolerance , 
-                interceptRatio = interceptRatio, adjust = adjust, n = n)
-                
-            return(object)
-        }
- 
-        solutions <- MQRDS[goodGuess,]
-        # which one is the highest valid peak?
-        scaling <- solutions$scale
-        shifting <- solutions$shift
-        
-        thisMQR <- MQR[goodGuess,]
-        interpDiploidXloc <- c(0,2) * thisMQR$M + thisMQR$Q # y = mx + q
-    }
-
-    if (exists("possiblePloidy")) {
-        PP <- possiblePloidy[goodGuess,]
-    } else {
-        PP <- 2
-    }
-    if (length(interpDiploidXloc) == 1) {
-        content = "Unknown"
-    } else if (length( interpDiploidXloc) == 2){
-        content = as.character(
-            signif(100*(1-interpDiploidXloc[1]/interpDiploidXloc[2]), 3))
-    } else {
-        stop("interpDiploidXloc has more than 2 elements!")
-    }
 
     # peak closest to the median
     ratioMedian <- median(ratio, na.rm = TRUE)
@@ -760,6 +618,90 @@ ratio2use <- function(object){
         min(abs(Density$x[peakBol]-ratioMedian), na.rm = TRUE))
     peakClosestToMedian <- Density$x[peakBol][medianPeaksIndex] 
 
+
+    if (method == 'mode'){
+        maxPeak <- Density$x[Density$y == max(Density$y, na.rm = TRUE)]
+        scaling <- 1/maxPeak
+        interpDiploidXloc <- maxPeak
+        MQR <- data.frame(M = maxPeak/2, Q = 0, R = 1)
+        suggPeak <- maxPeak
+        PP <- 2
+        content = "Unknown"
+    } else if (method == 'median'){
+        thisMedian <- median (ratio[ok4density], na.rm = TRUE)
+        scaling <- 1/thisMedian
+        interpDiploidXloc <- thisMedian
+        MQR <- data.frame(M = thisMedian/2, Q = 0, R = 1)
+        suggPeak <- thisMedian
+        PP <- 2
+        content = "Unknown"
+    } else if (method == 'closest'){
+        scaling <- 1/peakClosestToMedian
+        interpDiploidXloc <- peakClosestToMedian
+        MQR <- data.frame(M = peakClosestToMedian/2, Q = 0, R = 1)
+        suggPeak <- peakClosestToMedian
+        PP <- 2
+        content = "Unknown"
+    } else if (method == 'density'){
+        if (length(which(highPeaks)) == 1) { # only one peak, scale but don't shift (impossible to calculate )
+            scaling <- 1/Density$x[highPeaks]
+            interpDiploidXloc <- Density$x[highPeaks]
+            MQR <- data.frame(M = Density$x[highPeaks]/2, Q = 0, R = 1)
+        } else {
+            possibleMatrix <- possibleBinNumbers(ploidyToTest+1, length(which(highPeaks)))
+            # make table with ploidy
+            possiblePloidy <- matrix(NA, length(possibleMatrix[,1]), length(which(highPeaks)))
+            for (n in 1:length(possibleMatrix[,1]) ) {
+                possiblePloidy[n,] <- which(possibleMatrix[n,]==1) - 1
+            }
+            peakToUse <- Density$x[highPeaks]
+            MQR <- MQR(possibleMatrix, ploidyToTest, peakToUse)
+            
+            # MQRDS actually contains R shift and scale
+            MQRDS <- MQRDS(MQR)
+            goodGuess <- selectGoodGuess(Density, MQRDS, spacingTolerance, 
+                interceptRatio, possiblePloidy, peakRatio, peakSpan)
+
+            # here, in same rare cases, it happens that no solutions are
+            # available. Rerun using a smaller threshold to allow some
+            # "elasticity". Recursive function.
+            if (length(goodGuess) == 0) {
+                warning("No possible solutions. deacreasing parameter 'spacingTolerance'")
+                spacingTolerance = spacingTolerance * .95
+                object <- .guessPeaksAndPloidy(object, ok4density = ok4density, 
+                    peakRatio = peakRatio, ploidyToTest = ploidyToTest,
+                    spacingTolerance = spacingTolerance , 
+                    interceptRatio = interceptRatio, adjust = adjust, n = n)
+                    
+                return(object)
+            }
+    
+            solutions <- MQRDS[goodGuess,]
+            # which one is the highest valid peak?
+            scaling <- solutions$scale
+            shifting <- solutions$shift
+            
+            thisMQR <- MQR[goodGuess,]
+            interpDiploidXloc <- c(0,2) * thisMQR$M + thisMQR$Q # y = mx + q
+            suggPeak <- Density$x[highPeaks]
+        }
+
+        if (exists("possiblePloidy")) {
+            PP <- possiblePloidy[goodGuess,]
+        } else {
+            PP <- 2
+        }
+        if (length(interpDiploidXloc) == 1) {
+            content = "Unknown"
+        } else if (length( interpDiploidXloc) == 2){
+            content = as.character(
+                signif(100*(1-interpDiploidXloc[1]/interpDiploidXloc[2]), 3))
+        } else {
+            stop("interpDiploidXloc has more than 2 elements!")
+        }
+    } else {
+        stop ("Wrong 'method'. Acceptables values: 'median' or 'mode'")
+    }
     if (PP[Density$x[highPeaks] == peakClosestToMedian] == 0 
             & PP[length(PP)] == ploidyToTest){
         PP <- PP + 2
@@ -770,7 +712,7 @@ ratio2use <- function(object){
 
 
     object@Res@suggested.ploidy        <- PP
-    object@Res@suggested.peaks         <- Density$x[highPeaks]
+    object@Res@suggested.peaks         <- suggPeak
     object@Res@suggested.tumContent    <- content
     object@Res@interpDiploidXloc       <- interpDiploidXloc
     object@Res@notExcluded.density     <- Density
