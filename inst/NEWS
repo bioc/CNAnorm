@@ -3,6 +3,7 @@
        Added option fixVAxes to plotGenome to fix vertical axes to maxRatio and minRatio 
        Fixed plotGenome so that the line from superimpose = "DNACopy" is
        actually a line and not a series of dots
+       If plotting only one chromosome, instead of plotting chr name, it plots chromosome position.
 1.1.6: Added method 'closest' to function peakPloidy for a "standard" normalisation
        Fixed the 'mode' method
        Internal tiding 
