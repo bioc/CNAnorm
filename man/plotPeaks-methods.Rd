@@ -10,7 +10,7 @@
 
 \usage{
 \S4method{plotPeaks}{CNAnorm}(object, special1 = character(0), special2 = character(0),
-    show ='suggested', adjust = get.adjust(object), n = get.n(object), ...)
+    show ='suggested', ...)
 }
 
 \arguments{
@@ -23,10 +23,6 @@
 \item{show}{A character verctor with one or both of the following:
     \code{"suggested"}, \code{"validated"}. Specify what need to be plotted
 }
-\item{adjust}{ The adjust parameter for function \code{"density"}. Default will 
-retrieve the values use for \code{peakPloidy}}
-\item{n}{ The n parameter for function \code{"density"}. Default will 
-retrieve the values use for \code{peakPloidy}}
 \item{...}{Further arguments to pass to the function \code{plot}}
         
 }

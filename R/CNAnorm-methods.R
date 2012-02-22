@@ -73,7 +73,8 @@
 
 .plotGenome <- function (object, maxRatio = 8, minRatio = -1, 
     superimpose = character(0),  supLineColor = character(0), 
-    supLineCex = character(0), numHorLables = 10, colorful = FALSE, ...) {
+    supLineCex = character(0), numHorLables = 10, colorful = FALSE, 
+    fixVAxes = FALSE, ...) {
     # superimpose can be one of the following: "DNAcopy" or "smooth"    
 
     if (length(ratio.n(object)) == 0){
@@ -81,7 +82,7 @@
     }
 
     defaultColors <- c("black", "cyan", 'grey60', 'blue', 'red', 'darkgreen')
-    defaultsLineCex <- c(.5, .5)
+    defaultsLineCex <- c(5, 5)
     par(mar=c(5, 4, 4, 5))
     
     bolT <- ratio.n(object) < maxRatio & ratio.n(object) > minRatio
@@ -103,7 +104,11 @@
     yRange[1] <- yRange[1] - 0.1
     yRange[2] <- yRange[2] + 0.1
 
-    plot(xRange, yRange, type = 'n', xlab = "", xaxt="n", yaxt="n", ylab="", ...) 
+    if (fixVAxes){
+        plot(xRange, c(minRatio - 0.1, maxRatio + 0.1), type = 'n', xlab = "", xaxt="n", yaxt="n", ylab="", ...) 
+    } else {
+        plot(xRange, yRange, type = 'n', xlab = "", xaxt="n", yaxt="n", ylab="", ...) 
+    }
     if (colorful){
         AllX <- xAxes[where]
         AllY <- ratio.n(object)[where]
@@ -129,15 +134,27 @@
     xTickWidth <- numDots/(numHorLables + 1)
     breakPoints <- seq(from = 1, to = numDots, length.out = numHorLables + 1)
     middlePoints = round(breakPoints[1:length(breakPoints)-1] + 
+        breakPoints[2:length(breakPoints)])/2
+       
+    if (length(unique(chrs(object))) > 1){
+       lableNames <- chrs(object)
+        tickNames <- lableNames[middlePoints]
+        tickLocation = rep(NA, length(tickNames))
+        for (i in 1: length(tickNames)) {
+            tickLocation[i] = round(mean(which(chrs(object) %in% tickNames[i])) )
+        }
+        xAxLab <- "Genomic location"
+    } else {
+        labelsList <- makeNumericLabels(pos(object), 3)
+        labelNames <- labelsList$labels
 
-    breakPoints[2:length(breakPoints)])/2
-    lableNames <- chrs(object)
-    tickNames <- lableNames[middlePoints]
-    tickLocation = rep(NA, length(tickNames))
-    for (i in 1: length(tickNames)) {
-        tickLocation[i] = round(mean(which(chrs(object) %in% tickNames[i])) )
+        tickNames <- labelNames[middlePoints]
+        tickLocation <-  xAxes[middlePoints]
+        xAxLab <- paste ("Genomic location (", labelsList$unit , ") of ", unique(chrs(object)), sep = "")
     }
+
     axis(1, at = tickLocation, labels = tickNames)
+    title(xlab = xAxLab)
 
     yMax = floor(max(ratio.n(object)[where], na.rm = TRUE))
     axis(2, at = seq(0, yMax, by = .5), labels=2*(seq(0, yMax, by = .5)), 
@@ -166,23 +183,70 @@
         thisCol <- userOrDefault(supLineColor, defaultColors, which(superimpose == 'smooth')) 
         thisCex <- userOrDefault(supLineCex, defaultsLineCex, 
             which(superimpose == 'smooth'))
-        lines(xAxes[where], ratio.s.n(object)[where], type = 'p', cex = thisCex, 
-            pch=19, col = thisCol) #, type = 'l', lw = thisLw, col = thisCol)
+        lines(xAxes[where], ratio.s.n(object)[where], cex = thisCex, col = thisCol) #, type = 'l', lw = thisLw, col = thisCol)
     }
     if (any(superimpose == 'DNACopy', na.rm = TRUE)){
         if (length(segMean.n(object)) != length(object)) {
-            object <- addDNACopy(object)
+            stop ("No DNAcopy segmentation values. Please use 'addDNACopy' (before normalisation step)")
         } 
         thisCol <- userOrDefault(supLineColor, defaultColors, which(superimpose == 'DNACopy')) 
         thisCex <- userOrDefault(supLineCex, defaultsLineCex, 
             which(superimpose == 'DNACopy'))
-        lines(xAxes[where], segMean.n(object)[where], type = 'p', cex = thisCex, 
-            pch=19, col = thisCol) # type = 'l', lw = thisLw, col = thisCol)
+
+        myX <- xAxes[where]
+        myY <- segMean.n(object)[where]
+        transitions <- .startStop(myY)
+        for (i in 1:length(transitions$start)){
+            SEx <- c(myX[transitions$start[i]], myX[transitions$end[i]])
+            SEy <- c(myY[transitions$start[i]], myY[transitions$end[i]])
+            lines(SEx, SEy, lwd = thisCex, col = thisCol) # type = 'l', lw = thisLw, col = thisCol)
+        }
     }
+
     if (!all(superimpose %in% c('smooth', 'DNACopy'))) {
         warning("'superimpose' must be either 'smooth' or 'DNACopy'. skipping...\n")
     }
 }
+
+makeNumericLabels <- function(x, sDigits){
+    # get an array of genomic positions. It figures out the best displey (Gbp,
+    # Mbp, Kbp, bp) and the number of significative digits
+    hX <- max(x, na.rm = TRUE)
+    lX <- min(x, na.rm = TRUE)
+    sD2use <- round(log10(hX) - log10(hX - lX)) + sDigits
+    if(log10(hX) > 10){ # better report in Gbp
+        textX <- as.character(signif(x/1000000000, sD2use))
+        myUnit <- "Gbp"
+    } else if (log10(hX) > 7){ # better reprot in Mbp
+        textX <- as.character(signif(x/1000000, sD2use))
+        myUnit <- "Mbp"
+    } else if (log10(hX) > 4) { # better report in Kbp
+        textX <- as.character(signif(x/1000, sD2use))
+        myUnit <- "kbp"
+    } else { # veeery zoomed, just report in bp
+        textX <- as.character(signif(x, sD2use))
+        myUnit <- "bp"
+    }
+    results <- list (labels = textX, unit = myUnit)
+    return (results)
+}
+
+.startStop <- function (x){
+    # look for consecutive identical values in x and return its position of
+    # start and end.
+    # NAs produce breaks. A new start and stop will be set.
+    transitionBool <- x[1:length(x)-1] != x[-1]
+
+    transitions <- which(transitionBool | is.na(transitionBool))
+#     notNApostions <- which(!is.na(x))
+#     start <- c(notNApostions[1], transitions + 1)
+#     end <- c(transitions, notNApostions[length(notNApostions)])
+    start <- c(1, transitions + 1)
+    end <- c(transitions, length(x))
+    results <- list (start = start, end = end)
+    return (results)
+}
+
 
 .peakPloidy <- function(object, method = 'mixture', exclude = character(0),
     ploidyToTest = 12, sd = 5, dThresh = 0.01, n = 2048, adjust = 0.9, 
@@ -832,7 +896,10 @@ makeTextLabels <- function (xLoc, Ploidy) {
 }
 
 plotPeaksMixture <- function (object, special1 = character(0), special2 = character(0),
-    show ='suggested', adjust = get.adjust(object), n = get.n(object), bins = 200, ...) {
+    show ='suggested', bins = 200, ...) {
+    
+    adjust = get.adjust(object)
+    n = get.n(object)
     
     ratioMedian <- median(ratio(object), na.rm = TRUE)
 #     D1 <- specialDensity(object, special1, adjust, n)
@@ -873,9 +940,11 @@ plotPeaksMixture <- function (object, special1 = character(0), special2 = charac
 }
 
 .plotPeaks <- function (object, special1 = character(0), special2 = character(0),
-    show ='suggested', adjust = get.adjust(object), n = get.n(object), ...) {
+    show ='suggested', ...) {
     # as input provide the output of guessPeaksAndPloidy
     # Normalize by number of reads in ok4density
+    adjust = get.adjust(object)
+    n = get.n(object)
     bins = 200
     DD <- density(ratio2use(object)[object@DerivData@ok4density], adjust = adjust, n = n)
     X <- DD$x
@@ -951,7 +1020,8 @@ plotPeaksMixture <- function (object, special1 = character(0), special2 = charac
     ### check into peakBol
     # browser()
     if (mth == 'density'){
-        peakBol <- (X %in% peakX) & object@Res@notExcluded.isAPeak
+        isAPeak <- mapPeaks(X, peakX)
+        peakBol <- isAPeak & object@Res@notExcluded.isAPeak
         ww <- which(peakBol)    
     } else {
         isAPeak <- mapPeaks(X, peakX)

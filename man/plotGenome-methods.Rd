@@ -12,16 +12,17 @@
 \usage{
 \S4method{plotGenome}{CNAnorm}(object, maxRatio = 8, minRatio = -1,
     superimpose = character(0),  supLineColor = character(0),
-    supLineCex = character(0), numHorLables = 10, colorful = FALSE, ...)
+    supLineCex = character(0), numHorLables = 10, colorful = FALSE,
+    fixVAxes = FALSE, ...)
 }
 
 \arguments{
  
 \item{object}{An object of Class \code{"CNAnorm"}}
 \item{maxRatio}{The maximum ratio to be shown on the plot. Values or ratio
-    greater than maxRatio will be displayed as red triangulars}
+    greater than maxRatio will be displayed as green triangulars}
 \item{minRatio}{The minimum ratio to be shown on the plot. Values or ratio
-    smaller than minRatio will be displayed as red triangulars}
+    smaller than minRatio will be displayed as green triangulars}
 \item{superimpose}{A character verctor with one or both of the following:
     \code{"smooth"}, \code{"DNACopy"}}
 \item{supLineColor}{A three element character vector with colors to be used for
@@ -36,6 +37,8 @@
 \item{colorful}{A switch to decide if the background dots representing the 
     ratio of each window should be gray or colored according their value in 
     relation to the peak closest to the median}
+\item{fixVAxes}{A switch to decide if the vertical axes should be fixed to minRatio and 
+    maxRatio or fit the data within minRatio and maxRatio.}
 \item{...}{Further arguments to pass to the function \code{plot}}
         
 }

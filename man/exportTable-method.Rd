@@ -20,7 +20,7 @@
 \item{file}{name of the file to save to}
 \item{show}{what should be reported in the table: \code{"ratio"}: the normalized 
 ratio (a value of 1 means diploid). \code{"ploidy"}: the same as ratio * 2.
-\code{"center"}: report ratio centered on the most abbundand copy. Ratio of 1
+\code{"center"}: report ratio centered on the most abbundant copy. Ratio of 1
 means that the most abbundant ``state'' is centered to 1}
 \item{sep}{the field separator string.}
 \item{row.names}{either a logical value indicating whether the row number 
