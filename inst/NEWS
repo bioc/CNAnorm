@@ -1,3 +1,5 @@
+1.1.8: Fixed plotGenome so that, when fixVaxes = TRUE horizontal lines are drawn even
+    if there are no points in a certain area.
 1.1.7: Removed arguments 'adjust' and 'n' from plotPeaks as it needs to retrieve the same 
        values used in peakPloidy
        Added option fixVAxes to plotGenome to fix vertical axes to maxRatio and minRatio 

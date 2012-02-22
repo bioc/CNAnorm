@@ -98,7 +98,6 @@
 
     yAxesoutOfPlotPlus <- rep(maxRatio, length(outOfPlotPlus))
     yAxesoutOfPlotMinus <- rep(minRatio, length(outOfPlotMinus))
-    xAxisLab <- "Genomic position:"
     xRange <- range(xAxes[where], na.rm = TRUE)
     yRange <- range(ratio.n(object)[where], na.rm = TRUE)
     yRange[1] <- yRange[1] - 0.1
@@ -124,7 +123,7 @@
         lines(xAxes[where], ratio.n(object)[where], type = 'p', cex = .5, pch=19, 
             col = defaultColors[3])
     }
-    if (length(outOfPlotPlus) > 0) {
+    if (length(c(outOfPlotPlus, outOfPlotMinus)) > 0 ) {
         lines(xAxes[outOfPlotPlus], yAxesoutOfPlotPlus + 0.1, pch = 2, 
             cex = .5, type = 'p', col = defaultColors[6])
         lines(xAxes[outOfPlotMinus], yAxesoutOfPlotMinus - 0.1, pch = 6, 
@@ -156,7 +155,11 @@
     axis(1, at = tickLocation, labels = tickNames)
     title(xlab = xAxLab)
 
-    yMax = floor(max(ratio.n(object)[where], na.rm = TRUE))
+    if (fixVAxes){
+        yMax = maxRatio
+    } else {
+        yMax = floor(max(ratio.n(object)[where], na.rm = TRUE))
+    }
     axis(2, at = seq(0, yMax, by = .5), labels=2*(seq(0, yMax, by = .5)), 
         col.axis = 'blue')
     mtext("Estimated ploidy", side = 2, line = 3, col= 'blue')
@@ -173,7 +176,6 @@
     chrChange <- c(1, which(allChr[1:length(allChr)-1] != 
         allChr[2:length(allChr)]), length(allChr))
     abline(v = chrChange, col = defaultColors[1] )
-    xAxisLab <- paste(xAxisLab, "Chromosomes") 
     
     abline(h = object@Res@validated.closestPeak, col = 'gray20', lwd = 2)
     abline(h = object@Res@validated.ratioMedian, col = 'gray20', lwd = 2, lty = 3 )
