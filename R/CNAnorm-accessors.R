@@ -1,7 +1,16 @@
 ## Getters
 setMethod ("gcC", "CNAnorm", function(object){object@InData@GC})
 setMethod ("chrs", "CNAnorm", function(object){object@InData@Chr})
-setMethod ("pos", "CNAnorm", function(object){object@InData@Pos})
+# setMethod ("pos", "CNAnorm", function(object, show = "start"){
+#     show.choices <- c("start", "end")
+#     if (match.arg(tolower(show), show.choices) == "start"){
+#         return (object@InData@Pos)
+#     } 
+#         
+#     
+#     })
+# setMethod ("length", "CNAnorm", function (x) {length(x@InData)})
+# setMethod ("start", "CNAnorm", function(x){x@InData@Pos})
 setMethod ("segID", "CNAnorm", function(object){object@DerivData@segID})
 setMethod ("ratio", "CNAnorm", function(object){object@DerivData@ratio})
 setMethod ("ratio.n", "CNAnorm", function(object){object@DerivData@ratio.n})

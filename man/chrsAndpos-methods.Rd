@@ -6,6 +6,7 @@
 \alias{chrs<--methods}
 \alias{pos}
 \alias{pos-methods}
+\alias{pos,CNAnorm-method}
 \alias{pos<-}
 \alias{pos<--methods}
 \title{ Accessors methods for Function ratio in Package `CNAnorm' }
@@ -19,12 +20,13 @@ If you need to change data, it is better to change the input data and start over
 \usage{
 
 chrs(object)
-pos(object)
+\S4method{pos}{CNAnorm}(object, show = "start")
 }
 
 \arguments{
  
 \item{object}{An object of Class \code{"CNAnorm"}}
+\item{show}{The position to show: 'start', 'end'}
 }
 
 \value{\code{chrs} returns a numeric vector, \code{pos} returns a numeric vector}

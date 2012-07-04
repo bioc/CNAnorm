@@ -70,30 +70,69 @@
     return (object)
 }
 
+cumGenPosition <- function (object){
+    Chrs <- chrs(object)
+    Pos <- pos(object, show = "start")
+    numWin <- length(Pos)
+    toAdd <- 0
+    uChrs <- unique(Chrs)
+    numUChrs <- length(uChrs)
+    newPos <- rep(NA, numWin)
+    for (i in 1:numUChrs){
+        isThisChr <- Chrs == uChrs[i]
+        newPos[isThisChr] <- Pos[isThisChr] + toAdd
+        toAdd <- toAdd + max(Pos[isThisChr], na.rm = TRUE)
+    } 
+    return (newPos)
+}
 
 .plotGenome <- function (object, maxRatio = 8, minRatio = -1, 
-    superimpose = character(0),  supLineColor = character(0), 
-    supLineCex = character(0), numHorLables = 10, colorful = FALSE, 
-    fixVAxes = FALSE, ...) {
-    # superimpose can be one of the following: "DNAcopy" or "smooth"    
+    superimpose = character(0), gPar = NULL, numHorLables = 10, 
+    colorful = FALSE, show.centromeres = TRUE, idiogram = NULL,
+    fixVAxes = FALSE, supLineColor = character(0), 
+    supLineCex = character(0), dot.cex = .2, ...) {
+    # superimpose can be one of the following: "DNACopy" or "smooth"    
+
+    if (is.null(gPar)){ # load default values
+        gPar <- makeDefaultGraphParamteres()
+    }
+
+    
+    if (length(supLineColor) == 3){
+        warning("Parameter supLineColor is deprecated, see ?gPar")
+        gPar$genome$colors$segLine <- supLineColor[1]
+        gPar$genome$colors$smoothLine <- supLineColor[2]
+        gPar$genome$colors$neutral.dot <- supLineColor[3]
+    } 
+    if (length(supLineCex) == 2){
+        warning("Parameter supLineCex is deprecated, see ?gPar")
+        gPar$genome$lwd$segLine <- supLineCex[1]
+        gPar$genome$lwd$smoothLine <- supLineCex[2]
+    }
+
+    if (dot.cex != .2){
+        # the user probably set it
+        warning("Parameter dot.cex is deprecated, see ?gPar")
+        gPar$genome$cex$neutral.dot <- dot.cex
+    }
+
+    # temporary
+    # gPar <- data(gPar)
+    tPar <- gPar$genome
 
     if (length(ratio.n(object)) == 0){
         stop("Object does not contains normalized ratio\n")
     }
 
-    defaultColors <- c("black", "cyan", 'grey60', 'blue', 'red', 'darkgreen')
-    defaultsLineCex <- c(5, 5)
-    par(mar=c(5, 4, 4, 5))
+    par(mar = tPar$mar)
     
     bolT <- ratio.n(object) < maxRatio & ratio.n(object) > minRatio
     
     where <- which(bolT)
     outOfPlotPlus <- which(ratio.n(object) > maxRatio)
     outOfPlotMinus <- which(ratio.n(object) < minRatio)
-    xAxes <- 1:length(ratio.n(object))
-    xAxesoutOfPlotPlus <- pos(object)[outOfPlotPlus] 
-    xAxesoutOfPlotMinus <- pos(object)[outOfPlotMinus] 
-    # 1:length(outOfPlotPlus)
+#     xAxes <- 1:length(ratio.n(object))
+    xAxes <- cumGenPosition(object)
     numDots <- length(xAxes)
 
     yAxesoutOfPlotPlus <- rep(maxRatio, length(outOfPlotPlus))
@@ -104,9 +143,11 @@
     yRange[2] <- yRange[2] + 0.1
 
     if (fixVAxes){
-        plot(xRange, c(minRatio - 0.1, maxRatio + 0.1), type = 'n', xlab = "", xaxt="n", yaxt="n", ylab="", ...) 
-    } else {
-        plot(xRange, yRange, type = 'n', xlab = "", xaxt="n", yaxt="n", ylab="", ...) 
+        plot(xRange, c(minRatio - 0.1, maxRatio + 0.1), type = 'n', xlab = "",
+            xaxt="n", yaxt="n", ylab="", xaxs = "i", ...) 
+        } else {
+        plot(xRange, yRange, type = 'n', xlab = "", xaxt="n", yaxt="n", ylab="", 
+        xaxs = "i", ...) 
     }
     if (colorful){
         AllX <- xAxes[where]
@@ -115,44 +156,50 @@
         onlyLossY <- AllY[AllY < object@Res@validated.closestPeak]
         onlyGainX <- AllX[AllY >= object@Res@validated.closestPeak]
         onlyGainY <- AllY[AllY >= object@Res@validated.closestPeak]
-        lines(onlyLossX, onlyLossY, type = 'p', cex = .5, pch=19, 
-            col = defaultColors[4])
-        lines(onlyGainX, onlyGainY, type = 'p', cex = .5, pch=19, 
-            col = defaultColors[5])
+        points(onlyLossX, onlyLossY, cex = tPar$cex$loss.dot, pch = tPar$pch$loss.dot, 
+            col = tPar$colors$loss.dot)
+        points(onlyGainX, onlyGainY, cex = tPar$cex$gain.dot, pch = tPar$pch$gain.dot, 
+            col = tPar$colors$gain.dot)
     } else {
-        lines(xAxes[where], ratio.n(object)[where], type = 'p', cex = .5, pch=19, 
-            col = defaultColors[3])
+        points(xAxes[where], ratio.n(object)[where], cex = tPar$cex$neutral.dot, 
+            pch = tPar$pch$neutral.dot, col = tPar$colors$neutral.dot)
     }
     if (length(c(outOfPlotPlus, outOfPlotMinus)) > 0 ) {
-        lines(xAxes[outOfPlotPlus], yAxesoutOfPlotPlus + 0.1, pch = 2, 
-            cex = .5, type = 'p', col = defaultColors[6])
-        lines(xAxes[outOfPlotMinus], yAxesoutOfPlotMinus - 0.1, pch = 6, 
-            cex = .5, type = 'p', col = defaultColors[6])
+        points(xAxes[outOfPlotPlus], yAxesoutOfPlotPlus + 0.1, pch = tPar$pch$over.dot, 
+            cex = tPar$cex$over.dot, col = tPar$color$over.dot)
+        points(xAxes[outOfPlotMinus], yAxesoutOfPlotMinus - 0.1, pch = tPar$pch$below.dot, 
+            cex = tPar$cex$below.dot, col = tPar$color$below.dot)
     }
     # numDots <- length(where)
     xTickWidth <- numDots/(numHorLables + 1)
-    breakPoints <- seq(from = 1, to = numDots, length.out = numHorLables + 1)
+#    breakPoints <- seq(from = 1, to = max(xAxes, na.rm = TRUE), length.out =
+#        numHorLables + 1) 
+    breakPoints <- seq(from = 1, to = max(xAxes, na.rm = TRUE), 
+        length.out = numHorLables + 1)
     middlePoints = round(breakPoints[1:length(breakPoints)-1] + 
         breakPoints[2:length(breakPoints)])/2
        
     if (length(unique(chrs(object))) > 1){
-       lableNames <- chrs(object)
-        tickNames <- lableNames[middlePoints]
+        lableNames <- chrs(object)
+        tickNames <- pos2chr(chrs(object), xAxes, middlePoints)
         tickLocation = rep(NA, length(tickNames))
         for (i in 1: length(tickNames)) {
-            tickLocation[i] = round(mean(which(chrs(object) %in% tickNames[i])) )
+#             tickLocation[i] = round(mean(which(chrs(object) %in% tickNames[i])) )
+            thisChrPos <- which(chrs(object) %in% tickNames[i])
+            tickLocation[i] <- mean(xAxes[thisChrPos])
         }
-        xAxLab <- "Genomic location"
+        axis(1, at = tickLocation, labels = tickNames)
+        xAxLab <- tPar$lab$xAxes.low
     } else {
-        labelsList <- makeNumericLabels(pos(object), 3)
-        labelNames <- labelsList$labels
-
-        tickNames <- labelNames[middlePoints]
-        tickLocation <-  xAxes[middlePoints]
-        xAxLab <- paste ("Genomic location (", labelsList$unit , ") of ", unique(chrs(object)), sep = "")
+        labelsList <- makeNumericLabels(axTicks(1), 3)
+        tickNames <- labelsList$labels
+# 
+        tickLocation <-  axTicks(1)
+        axis(1, at = tickLocation, labels = tickNames)
+        xAxLab <- paste (tPar$lab$xAxes.low, " (", labelsList$unit , ") of ",
+            unique(chrs(object)), sep = "") 
     }
 
-    axis(1, at = tickLocation, labels = tickNames)
     title(xlab = xAxLab)
 
     if (fixVAxes){
@@ -162,38 +209,61 @@
     }
     axis(2, at = seq(0, yMax, by = .5), labels=2*(seq(0, yMax, by = .5)), 
         col.axis = 'blue')
-    mtext("Estimated ploidy", side = 2, line = 3, col= 'blue')
+    mtext(tPar$lab$yAxes.left, side = 2, line = 3, cex = tPar$cex$yAxes.left,
+        col= tPar$colors$yAxes.left)
     roundPloidy <- signif(object@Res@validated.closestPeak, digits=2)
     axis(4, at = seq(0, yMax, by = roundPloidy), 
         labels=signif(seq(0, yMax, by = roundPloidy)/roundPloidy, digits = 2))
-    mtext("ratio centered on most common", side=4, line=3)
+    mtext(tPar$lab$yAxes.right, side=4, line=3, cex = tPar$cex$yAxes.right, 
+        col = tPar$colors$yAxes.right)
 
-    abline(h = seq(0, yMax, by = .5), col = 'gray')
+    abline(h = seq(0, yMax, by = .5), col = tPar$colors$grid, lwd = tPar$lwd$grid, 
+        lty = tPar$lty$grid)
     
-    
+   
+    # plot vertical lines on the edge between chromosomes
     # allChr <- Res$data$Chr[where]
     allChr <- chrs(object)
-    chrChange <- c(1, which(allChr[1:length(allChr)-1] != 
-        allChr[2:length(allChr)]), length(allChr))
-    abline(v = chrChange, col = defaultColors[1] )
+    wChrChange <- which(allChr[1:length(allChr)-1] != allChr[2:length(allChr)])
+    chrChange <- c(1, xAxes[wChrChange], max(xAxes, na.rm = TRUE))
+    abline(v = chrChange, col = tPar$colors$chrVertLines, lty = tPar$lty$chrVertLines,
+        lwd = tPar$lwd$chrVertLines)
     
-    abline(h = object@Res@validated.closestPeak, col = 'gray20', lwd = 2)
-    abline(h = object@Res@validated.ratioMedian, col = 'gray20', lwd = 2, lty = 3 )
+    abline(h = object@Res@validated.closestPeak, col = tPar$colors$closestPeak, 
+        lwd = tPar$lwd$closestPeak, lty = tPar$lty$closestPeak)
+    abline(h = object@Res@validated.ratioMedian, col = tPar$colors$ratioMedian,
+        lwd = tPar$lwd$ratioMedian, lty = tPar$lty$ratioMedian )
+
+    # show the centromere
+    if (show.centromeres){
+        if (is.null(idiogram)){
+            hg19_hs_ideogr <- NULL # this is to avoid a NOTE in CMD CHECK
+            rm(hg19_hs_ideogr)# this is to avoid a NOTE in CMD CHECK
+            data(hg19_hs_ideogr)
+            idiogram <- hg19_hs_ideogr
+        }
+        uChrs <- unique(chrs(object))
+        centrm.location <- rep(NA, length(uChrs))
+        for (i in 1:length(uChrs)){
+            wCentr <- which(uChrs[i] == as.character(idiogram$chrom) & 
+                as.character(idiogram$gieStain) == "acen")
+            centrm.location[i] <- idiogram$chromEnd[wCentr[1]] + 
+                min(xAxes[chrs(object) == uChrs[i]]) - 1
+        }
+        abline(v = centrm.location, col = tPar$colors$centrm, lwd = tPar$lwd$centrm,
+            lty = tPar$lty$centrm)
+    }
+
 
     # superimpose DNAcopy and/or smooth
     if (any(superimpose == 'smooth', na.rm = TRUE)){
-        thisCol <- userOrDefault(supLineColor, defaultColors, which(superimpose == 'smooth')) 
-        thisCex <- userOrDefault(supLineCex, defaultsLineCex, 
-            which(superimpose == 'smooth'))
-        lines(xAxes[where], ratio.s.n(object)[where], cex = thisCex, col = thisCol) #, type = 'l', lw = thisLw, col = thisCol)
+        lines(xAxes[where], ratio.s.n(object)[where], lwd = tPar$lwd$smoothLine, 
+            col = tPar$colors$smoothLine) #, type = 'l', lw = thisLw, col = thisCol)
     }
     if (any(superimpose == 'DNACopy', na.rm = TRUE)){
         if (length(segMean.n(object)) != length(object)) {
             stop ("No DNAcopy segmentation values. Please use 'addDNACopy' (before normalisation step)")
         } 
-        thisCol <- userOrDefault(supLineColor, defaultColors, which(superimpose == 'DNACopy')) 
-        thisCex <- userOrDefault(supLineCex, defaultsLineCex, 
-            which(superimpose == 'DNACopy'))
 
         myX <- xAxes[where]
         myY <- segMean.n(object)[where]
@@ -201,13 +271,44 @@
         for (i in 1:length(transitions$start)){
             SEx <- c(myX[transitions$start[i]], myX[transitions$end[i]])
             SEy <- c(myY[transitions$start[i]], myY[transitions$end[i]])
-            lines(SEx, SEy, lwd = thisCex, col = thisCol) # type = 'l', lw = thisLw, col = thisCol)
+            lines(SEx, SEy, lwd = tPar$lwd$segLine, col = tPar$colors$segLine) # type = 'l', lw = thisLw, col = thisCol)
         }
     }
 
     if (!all(superimpose %in% c('smooth', 'DNACopy'))) {
         warning("'superimpose' must be either 'smooth' or 'DNACopy'. skipping...\n")
     }
+}
+
+pos2chr <- function (chrName, cumPosition, look4Pos){
+    look4chr <- rep(NA, length(look4Pos))
+    for (i in 1:length(look4Pos)){
+        wMin <- which(abs(look4Pos[i] - cumPosition) == min(abs(look4Pos[i] - cumPosition)))
+        look4chr[i] <- chrName[wMin[1]] # wMin could be a two elements array if look4Pos[i] in half way between two points
+    }
+    return (look4chr)
+}
+
+.pos <- function(object, show = "start"){
+    show.choices <- c("start", "end")
+    if (match.arg(tolower(show), show.choices) == "start"){
+        return (object@InData@Pos)
+    } else if (match.arg(tolower(show), show.choices) == "end") {
+        mws <- medianWinSize(object)
+        return (object@InData@Pos + mws)
+    }
+}
+
+medianWinSize <- function(object){
+    uChrs <- unique(chrs(object))
+    numChr <- length(uChrs)
+    medians <- rep(NA, numChr)
+    for (i in 1:numChr){
+        subSet <- chrs(object) %in% uChrs[i]
+        medians[i] <- median(diff(pos(object[subSet]), na.rm = TRUE))
+    }
+    globalMedian <- median(medians, na.rm = TRUE)
+    return (globalMedian)
 }
 
 makeNumericLabels <- function(x, sDigits){
@@ -809,15 +910,17 @@ ratio2use <- function(object){
     segMean <- rep(NA, length(object))
 
     for (segNum in 1:length(segObj$output$chrom)) {
-        thisChr <- as.character(segObj$output$chrom[segNum])
-        thisStart <- segObj$output$loc.start[segNum]
-        thisEnd <- segObj$output$loc.end[segNum]
         thisMean <- segObj$output$seg.mean[segNum]
-        # pointInThisSeg <- cnaList$data$Chr == thisChr & cnaList$data$Pos >= thisStart & cnaList$data$Pos < thisEnd
-        pointInThisSeg <- (chrs(object) == thisChr & pos(object) >= thisStart &
-            pos(object) <= thisEnd)
-        segID[pointInThisSeg] <- segNum
-        segMean[pointInThisSeg] <- thisMean
+        if (!is.na(thisMean)){
+            thisChr <- as.character(segObj$output$chrom[segNum])
+            thisStart <- segObj$output$loc.start[segNum]
+            thisEnd <- segObj$output$loc.end[segNum]
+            # pointInThisSeg <- cnaList$data$Chr == thisChr & cnaList$data$Pos >= thisStart & cnaList$data$Pos < thisEnd
+            pointInThisSeg <- (chrs(object) == thisChr & pos(object) >= thisStart &
+                pos(object) <= thisEnd)
+            segID[pointInThisSeg] <- segNum
+            segMean[pointInThisSeg] <- thisMean
+        }
     }
     object@DerivData@segID <- segID
     object@DerivData@segMean <- segMean
@@ -1247,6 +1350,7 @@ mapPeaks <- function(map, peaks) {
 }
 
 setMethod(f = "gcNorm", signature = "CNAnorm", definition = .gcNorm)
+setMethod(f = "pos", signature = "CNAnorm", definition = .pos)
 setMethod(f = "addSmooth", signature = "CNAnorm", definition = .addSmooth)
 setMethod(f = "addDNACopy", signature = "CNAnorm", definition = .addDNACopy)
 setMethod(f = "peakPloidy", signature = "CNAnorm", definition = .peakPloidy)

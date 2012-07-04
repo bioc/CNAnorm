@@ -1,10 +1,22 @@
+1.3.4: Fixed an issue with "chr9" which was not segmented. Apparently it is a bug
+    with DNAcopy that will be followed up.
+1.3.3: Changed the 'pos' getter so that you can now decide to get the start or
+    the end of the window. This is still not 100% perfect (assumes costant width
+    window and could go over the end of the chromosome), but it is in preparation
+    of furhter improvements.
+    When plotting only one chromosome, chromosome location is now at nicer (i.e. round)
+    locations.
+    Added capability to show location of centromeres as vertical dotted lines. 
+1.3.1: Much improved control over graphical elements of method plotGenome.
+    Properties of nearly every color, symbol, line etc can now be set by the user
+    Fixed a bug when input has NA in Norm.
 1.1.8: Fixed plotGenome so that, when fixVaxes = TRUE horizontal lines are drawn even
     if there are no points in a certain area.
 1.1.7: Removed arguments 'adjust' and 'n' from plotPeaks as it needs to retrieve the same 
-       values used in peakPloidy
+       values used in peakPloidy.
        Added option fixVAxes to plotGenome to fix vertical axes to maxRatio and minRatio 
        Fixed plotGenome so that the line from superimpose = "DNACopy" is
-       actually a line and not a series of dots
+       actually a line and not a series of dots.
        If plotting only one chromosome, instead of plotting chr name, it plots chromosome position.
 1.1.6: Added method 'closest' to function peakPloidy for a "standard" normalisation
        Fixed the 'mode' method

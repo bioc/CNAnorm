@@ -102,17 +102,35 @@ CN <- discreteNorm(CN)
 
 Finally, we can plot the whole genome.
 
+\begin{center}
 <<fig=TRUE, echo=TRUE>>=
 plotGenome(CN, superimpose = 'DNACopy')
 @
+\end{center}
 
 Or just a subset of it.
 
+\begin{center}
 <<fig=TRUE, echo=TRUE>>=
 toPlot <- c('chr10', 'chr11', 'chr12')
 subSet <- chrs(CN) %in% toPlot
 plotGenome(CN[subSet], superimpose = 'DNACopy')
 @
+\end{center}
+
+Several aspects of the plot can be customized (colors, point and line size and
+so on) by setting the desired value in object gPar and then passing it to plotGenome
+
+\begin{center}
+<<fig=TRUE, echo=TRUE>>=
+data(gPar)
+gPar$genome$colors$gain.dot <- 'darkorange'
+gPar$genome$colors$grid <- NULL
+gPar$genome$cex$gain.dot <- .4
+gPar$genome$cex$loss.dot <- .4
+plotGenome(CN[subSet], superimpose = 'DNACopy', gPar = gPar, colorful = TRUE)
+@
+\end{center}
 
 Finally, we can export results in a table-like format.
 <<>>=

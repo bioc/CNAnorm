@@ -1,6 +1,6 @@
 setGeneric("gcC", function(object){standardGeneric("gcC")})
 setGeneric("chrs", function(object){standardGeneric("chrs")})
-setGeneric("pos", function(object){standardGeneric("pos")})
+setGeneric("pos", function(object, ...){standardGeneric("pos")})
 setGeneric("get.adjust", function(object){standardGeneric("get.adjust")})
 setGeneric("get.n", function(object){standardGeneric("get.n")})
 

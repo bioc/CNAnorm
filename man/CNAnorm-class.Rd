@@ -7,7 +7,6 @@
 \alias{chrs<-,CNAnorm-method}
 \alias{length,CNAnorm-method}
 \alias{[,CNAnorm-method}
-\alias{pos,CNAnorm-method}
 \alias{pos<-,CNAnorm-method}
 \alias{length,CNAnorm-method}
 \alias{ratio,CNAnorm-method}

@@ -3,7 +3,7 @@
 justRatio <- function(obj) {
     # get the ratio where Norm != 0
     # obj is InData
-    normNoZ <- obj@Norm != 0
+    normNoZ <- (obj@Norm != 0) & (!is.na(obj@Norm))
     ratio <- rep(NA, length(obj@Norm))
     ratio[normNoZ] <- obj@Test[normNoZ]/obj@Norm[normNoZ]
     return (ratio)
@@ -53,7 +53,7 @@ setMethod ("initialize", "InData",
             .Object@ratio <- justRatio(.Object)
         }
         if (length(unique(GC)) == 1) {
-            warning("All GC content is constant. Ignoring GC")
+#             warning("All GC content is constant. Ignoring GC")
             GC = numeric(0)
         }
         .Object@GC <- GC
