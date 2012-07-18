@@ -1,0 +1,32 @@
+citHeader("To cite package 'CNAnorm' in publications use:")
+
+# year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date, perl = TRUE)
+
+vers <- paste("R package version", meta$Version)
+
+citEntry(entry="article",
+    Title = paste("Correcting for cancer genome size and tumour cell content enables ",
+        "better estimation of copy number alterations from next-generation sequence ",
+        "data", sep = ""),
+    Author = personList(as.person("Arief Gusnanto"),
+        as.person("Henry M Wood"), 
+        as.person("Yudi Pawitan"),
+        as.person("Pamela Rabbitts"),
+        as.person("Stefano Berri")),
+    Year = 2012,
+#     note = vers,
+    Journal = "Bioinformatics",
+    Month = {"Jan"},
+    Number = {"1"},
+    Pages = {"40-7"},
+    Volume = {"28"},
+
+
+    textVersion = paste("Arief Gusnanto, Henry M Wood, Yudi Pawitan, Pamela ",
+        "Rabbitts and Stefano Berri. ", 
+        "Correcting for cancer genome size and tumour cell content enables ", 
+        "better estimation of copy number alterations from next-generation sequence data. ",
+        "Bioinformatics 2012, 28(1):40-47",  sep = "")
+)
+
+
