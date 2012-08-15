@@ -17,12 +17,14 @@
 }
 
 \usage{
-\S4method{addDNACopy}{CNAnorm}(object)
+\S4method{addDNACopy}{CNAnorm}(object, independent.arms = FALSE, ideograms = NULL)
 }
 
 \arguments{
  
 \item{object}{An object of Class \code{"CNAnorm"}}
+\item{independent.arms}{Boolean. If TRUE chromosomes arms will be treated as independent, ideograms must be provided}
+\item{ideograms}{A data frame containing information about banding. See ?hg19_hs_ideogr for more information}
         
 }
 
@@ -36,7 +38,7 @@ CN <- dataFrame2object(LS041)
 CN <- addDNACopy(CN)
 }
 \seealso{
-\code{\link{segMean}}, \code{\link{CNAnorm-class}}, \code{DNAcopy}
+\code{\link{segMean}}, \code{\link{CNAnorm-class}}, \code{DNAcopy}, \code{\link{hg19_hs_ideogr}}
 }
 
 \references{

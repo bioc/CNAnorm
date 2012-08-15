@@ -3,7 +3,7 @@ useDynLib(CNAnorm)
 import(methods)
 export(dataFrame2object)
 exportClasses(CNAnorm, InData, DerivData, Params)
-exportMethods(gcNorm, chrs, pos, "chrs<-", "pos<-", 
+exportMethods(gcNorm, chrs, arms, pos, "chrs<-", "pos<-", 
     ratio, ratio.n, ratio.s, ratio.s.n, segMean, 
     segMean.n, addSmooth, addDNACopy, plotPeaks, plotGenome, peakPloidy,
     sugg.ploidy, sugg.peaks, valid.ploidy, valid.peaks, validation, 

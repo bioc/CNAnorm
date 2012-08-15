@@ -299,6 +299,25 @@ pos2chr <- function (chrName, cumPosition, look4Pos){
     }
 }
 
+.arms <- function (object, banding_df) {
+    # banding_df is a data frame. see hg19_hs_ideogr for info
+    arms <- paste(banding_df$chrom, substr(banding_df$name, 1, 1), sep="")
+    uArms <- unique(arms)
+    newNames <- rep(NA, length(object))
+    # first fill those not in banding_df
+    notInBanding <- ! (chrs(object) %in% unique(banding_df$chrom))
+    newNames[notInBanding] <- chrs(object)[notInBanding]
+    for (i in 1:length(uArms)){
+        wArm <- arms == uArms[i]
+        chrName <- as.character(unique(banding_df$chrom[wArm]))
+        startArm <- min(banding_df$chromStart[wArm], na.rm = TRUE)
+        endArm <- max(banding_df$chromEnd[wArm], na.rm = TRUE)
+        whereThisArm <- chrs(object) == chrName & pos(object) > startArm & pos(object) <= endArm 
+        newNames[whereThisArm] <- uArms[i]
+    }
+    return (newNames)
+}
+
 medianWinSize <- function(object){
     uChrs <- unique(chrs(object))
     numChr <- length(uChrs)
@@ -897,13 +916,29 @@ ratio2use <- function(object){
     return(object)
 }
 
-.addDNACopy <- function (object) {
+.addDNACopy <- function (object, independent.arms = FALSE, ideograms = NULL) {
     # object is CNAnorm  
+    # some input checking
+    if (independent.arms){
+        if (! is.data.frame(ideograms) ){
+            stop("Ideograms must be a data frame when independent.arms = TRUE")
+        }
+        if (!all(c('chrom', 'chromStart', 'chromEnd', 'name') %in% colnames(ideograms))){
+            stop("Ideograms seems invalid. Wrong colnames")
+        }
+    }
+    
     toSegment <- object@DerivData@ratio
 
     toSegment[toSegment <= 0] <- .05
     # using DNA copy, segment the data
-    CNA.object <- CNA(log2(toSegment), chrs(object), pos(object), data.type = 'logratio')
+    if (independent.arms & is.data.frame(ideograms)){
+        chrs2use <- arms(object, ideograms)
+    } else {
+        chrs2use <- chrs(object)
+    }
+
+    CNA.object <- CNA(log2(toSegment), chrs2use, pos(object), data.type = 'logratio')
     smoothed.CNA.object <- smooth.CNA(CNA.object)
     segObj <- segment(smoothed.CNA.object, verbose = 0)
     segID <- rep(NA, length(object))
@@ -916,7 +951,8 @@ ratio2use <- function(object){
             thisStart <- segObj$output$loc.start[segNum]
             thisEnd <- segObj$output$loc.end[segNum]
             # pointInThisSeg <- cnaList$data$Chr == thisChr & cnaList$data$Pos >= thisStart & cnaList$data$Pos < thisEnd
-            pointInThisSeg <- (chrs(object) == thisChr & pos(object) >= thisStart &
+            # pointInThisSeg <- (chrs(object) == thisChr & pos(object) >= thisStart &
+            pointInThisSeg <- (chrs2use == thisChr & pos(object) >= thisStart &
                 pos(object) <= thisEnd)
             segID[pointInThisSeg] <- segNum
             segMean[pointInThisSeg] <- thisMean
@@ -1351,6 +1387,7 @@ mapPeaks <- function(map, peaks) {
 
 setMethod(f = "gcNorm", signature = "CNAnorm", definition = .gcNorm)
 setMethod(f = "pos", signature = "CNAnorm", definition = .pos)
+setMethod(f = "arms", signature = "CNAnorm", definition = .arms)
 setMethod(f = "addSmooth", signature = "CNAnorm", definition = .addSmooth)
 setMethod(f = "addDNACopy", signature = "CNAnorm", definition = .addDNACopy)
 setMethod(f = "peakPloidy", signature = "CNAnorm", definition = .peakPloidy)
