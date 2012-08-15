@@ -1,3 +1,6 @@
+1.3.5: Added function 'arms' which return name of chromosome and its arm.
+    Segmentation can be now done within chromosome arms. The segmentation will not 
+    go across centromeres
 1.3.4: Fixed an issue with "chr9" which was not segmented. Apparently it is a bug
     with DNAcopy that will be followed up. (Thanks to Rose Brannon for reporting and documenting it)
 1.3.3: Changed the 'pos' getter so that you can now decide to get the start or
