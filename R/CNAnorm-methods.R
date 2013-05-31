@@ -833,6 +833,9 @@ ratio2use <- function(object){
             scaling <- 1/Density$x[highPeaks]
             interpDiploidXloc <- Density$x[highPeaks]
             MQR <- data.frame(M = Density$x[highPeaks]/2, Q = 0, R = 1)
+            suggPeak <- peakClosestToMedian
+            PP <- 2
+            content = "Unknown"
         } else {
             possibleMatrix <- possibleBinNumbers(ploidyToTest+1, length(which(highPeaks)))
             # make table with ploidy
@@ -895,7 +898,6 @@ ratio2use <- function(object){
             & PP[length(PP)] == ploidyToTest) {
         PP <- PP + 1
     }
-
 
     object@Res@suggested.ploidy        <- PP
     object@Res@suggested.peaks         <- suggPeak
