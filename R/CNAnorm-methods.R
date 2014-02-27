@@ -121,7 +121,19 @@ cumGenPosition <- function (object){
     tPar <- gPar$genome
 
     if (length(ratio.n(object)) == 0){
-        stop("Object does not contains normalized ratio\n")
+        stop("Object does not contains normalized ratio. See ?discreteNorm\n")
+    } else if (sum(!is.na(ratio.n(object))) == 0 ){
+        warning("Object does not contains valid ratio\n")
+#         labelsList <- makeNumericLabels(axTicks(1), 3)
+#         xAxLab <- paste (tPar$lab$xAxes.low, " (", labelsList$unit , ") of ",
+#             unique(chrs(object)), sep = "") 
+        plot(c(0,1), c(0,1),  xaxt="n", yaxt="n", ylab="", xaxs = "i", 
+            type = 'n', xlab = '')
+        noPointText <- paste("No valid values to plot for", 
+            paste(unique(chrs(object)), collapse = ', '))
+        text(0.5, 0.5, noPointText, pos = 1)
+        return(1)
+
     }
 
     par(mar = tPar$mar)
@@ -918,7 +930,111 @@ ratio2use <- function(object){
     return(object)
 }
 
-.addDNACopy <- function (object, independent.arms = FALSE, ideograms = NULL) {
+.validateParams <- function(funName, validParamNames, newPairs){
+    newPNames <- names(newPairs)
+    okNames <- newPNames %in% validParamNames
+    if (all(okNames)){
+        # all parameters have valid names
+        return (newPairs)
+    } else {
+        nonValid <- paste(newPNames[!okNames], collapse = ', ')
+        warning(paste("Non valid parameters to pass to function", funName, "are ignored:", nonValid))
+        return (newPairs[okNames])
+    }
+}
+
+.getWeightByChr <- function(method, x, chrs, stdvs){
+    uCh <- unique (chrs)
+    whichChr <- lapply(uCh, function(oneChr, allChr, x){x[allChr == oneChr]}, chrs, x)
+    Wlist <- lapply(whichChr, .getWeight, method, stdvs)
+    return(unlist(Wlist))
+}
+
+.getWeight <- function(x, method, stdvs){
+    avMeths <- c('poisson', 'gaussian', 'twoTailQuantile', 'oneTailQuantile')
+    isMatch <- pmatch(tolower(method), avMeths)
+    if (is.na(isMatch) | length(isMatch) > 1){
+        stop(paste("Method passed '", method, "' does not match valid one (", 
+            paste(avMeths, collapse = ', '),")", sep = ''))
+    }
+    met2use <- avMeths[isMatch]
+    switch(met2use, 
+        poisson =  .poissonWeights(x, stdvs),
+        gaussian = .gaussianWeights(x, stdvs),
+        twoTailQuantile = .TTquantileWeights(x, stdvs),
+        oneTailQuantile = .OTquantileWeights(x, stdvs)
+    )
+}
+
+.poissonWeights <- function(x, stdvs){
+    # this is symmetric around the mean
+    # we need to remove x = 0 or all the centromeres would be there...
+    Lambda <- mean(x[x > 0], na.rm = TRUE)
+    # std = sqrt(Lambda). We use stdvs standar deviations
+    std = stdvs * sqrt(Lambda)
+    Distance <- abs(x - Lambda)
+    return(.calcWeight(Distance, std))
+}
+
+.gaussianWeights <- function(x, stdvs){
+    if (length(x) < 10){
+        return(rep(1, length(x)))
+    }
+    # this is symmetric, around the MEDIAN
+    # we need to remove x = 0 or all the centromeres would be there...
+    Median <- median(x[x > 0], na.rm = TRUE)
+    # std = sqrt(Lambda). We use stdvs standar deviations
+    std = stdvs * sd(x[x > 0], na.rm = TRUE)
+    Distance <- abs(x - Median)
+    return(.calcWeight(Distance, std))
+}
+
+.OTquantileWeights <- function(x, stdvs){
+    # this is a-symmetric, around the MEDIAN
+    # we need to remove x = 0 or all the centromeres would be there...
+    Median <- median(x[x > 0], na.rm = TRUE)
+    Q <- quantile (x[x > 0], c(0.05, 0.5, 0.95))
+    D1 <- Q[2] - Q[1]
+    Median <- Q[2]
+    D2 <- Q[3] - Q[2]
+    W <- rep (NA, length(x))
+    Distance <- abs(x - Median)
+    W[x <= Median] <- .calcWeight(Distance[x <= Median], D1)
+    W[x > Median] <- 1
+    return(W)
+}
+
+.TTquantileWeights <- function(x, stdvs){
+    # this is a-symmetric, around the MEDIAN
+    # we need to remove x = 0 or all the centromeres would be there...
+    Median <- median(x[x > 0], na.rm = TRUE)
+    Q <- quantile (x[x > 0], c(0.05, 0.5, 0.95))
+    D1 <- Q[2] - Q[1]
+    Median <- Q[2]
+    D2 <- Q[3] - Q[2]
+    W <- rep (NA, length(x))
+    Distance <- abs(x - Median)
+    W[x <= Median] <- .calcWeight(Distance[x <= Median], D1)
+    W[x > Median] <- .calcWeight(Distance[x > Median], D2)
+    return(W)
+}
+
+.calcWeight <- function(x, d){
+    # x is the variable, d is the range (usually fixed)
+    W <- rep(NA, length(x))
+    # where x is larger than d
+    oR <- x > d
+    W[!oR] <- 1
+    W[oR] <- 1 - ((x[oR] - d) / x[oR])
+    return (W)
+}
+
+.addDNACopy <- function (object, independent.arms = FALSE, ideograms = NULL, 
+    DNAcopy.smooth = list(), DNAcopy.weight = character(), DNAcopy.segment = list()) {
+    
+    # not exposed parameter
+    SDV <- 2
+    
     # object is CNAnorm  
     # some input checking
     if (independent.arms){
@@ -940,9 +1056,30 @@ ratio2use <- function(object){
         chrs2use <- chrs(object)
     }
 
-    CNA.object <- CNA(log2(toSegment), chrs2use, pos(object), data.type = 'logratio')
-    smoothed.CNA.object <- smooth.CNA(CNA.object)
-    segObj <- segment(smoothed.CNA.object, verbose = 0)
+    CNA.object <- CNA(log2(toSegment), chrs2use, pos(object), 
+        data.type = 'logratio', presorted = TRUE)
+
+    # check the user defined parameters to pass to smoott.CNA are valid    
+    validNamesSmooth <- c("smooth.region", "outlier.SD.scale", "smooth.SD.scale", "trim")
+    DNAcopy.smooth <- .validateParams('smooth.CNA', validNamesSmooth, DNAcopy.smooth)
+    # call smooth.DNA using do.call
+    smoothed.CNA.object <- do.call(smooth.CNA, c(list(CNA.object), DNAcopy.smooth))
+
+    # check the user defined parameters to pass to smoott.CNA are valid    
+    validNamesSegment <- c("alpha", "nperm", "p.method", "min.width", "kmax", "nmin", 
+        "eta", "sbdry", "trim", "undo.splits", "undo.prune", "undo.SD")
+    DNAcopy.segment <- .validateParams('segment', validNamesSegment, DNAcopy.segment)
+    # call segment using do.call
+    if (length(DNAcopy.weight) == 0){
+        segObj <- do.call(segment, c(list(smoothed.CNA.object,
+            verbose = 0), DNAcopy.segment))
+    } else {
+        WW <- .getWeightByChr(DNAcopy.weight, object@InData@Norm, chrs(object) ,SDV)
+        segObj <- do.call(segment, c(list(smoothed.CNA.object,
+            verbose = 0, weights = WW), DNAcopy.segment))
+    }
+
+
     segID <- rep(NA, length(object))
     segMean <- rep(NA, length(object))
 

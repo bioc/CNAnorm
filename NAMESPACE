@@ -1,7 +1,8 @@
 useDynLib(CNAnorm)
 
 import(methods)
-export(dataFrame2object)
+importFrom(DNAcopy, CNA, smooth.CNA, segment)
+export(dataFrame2object, CNAnormWorkflow)
 exportClasses(CNAnorm, InData, DerivData, Params)
 exportMethods(gcNorm, chrs, arms, pos, "chrs<-", "pos<-", 
     ratio, ratio.n, ratio.s, ratio.s.n, segMean, 
