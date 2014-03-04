@@ -23,4 +23,4 @@ Collate: AllGenerics.R AllClasses.R dataFrame2object.R
 URL: http://www.r-project.org,
 LazyLoad: yes
 Packaged: 2011-10-14 08:33:33 UTC; stefanoberri
-biocViews: Sequencing, CopyNumberVariation, Sequencing, Cancer, Lung
+biocViews: CopyNumberVariation, Sequencing, Cancer, Lung
