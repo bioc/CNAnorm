@@ -15,9 +15,9 @@ In particular, CNAnorm aims to perform a meaningful \emph{normalisation} of the 
 by estimation of the underlying tumour's ploidy.
 CNAnorm allows both a fully automated as well as an interactive approach to the
 normalisation step. It provides serveral normalisation methods. If the user has
-some external ``clues'' about the ploidy of the genome, it is possible to
+some external information about the ploidy of the genome, it is possible to
 manually inform CNAnorm and then perform the normalisation.
-CNAnorm also provides a method to plot the normalised genome.
+CNAnorm also provides a method for plotting the normalised genome profile.
 
 For more information and the original data, see the authors' website.
 \\
@@ -36,15 +36,15 @@ LS041[1:5,]
 @
 
 The input data can be produced from sam/bam files using the perl script \verb@bam2windows.pl@
-that you can obtain from the authors' website. There you can also find the bam
+that you can obtain from the authors' website (\verb@http://www.precancer.leeds.ac.uk/cnanorm/@). There you can also find the bam
 files used to produce the dataframe LS041.
 
 The first step is to create an object of class CNAnorm with the input data.
-The input data consists of number of reads in test and control for a variable number of 
+The input data consists of a number of reads in the test (tumour) and control (normal) for a variable number of 
 \textbf{constant width windows}. Chromosome/contig name and the starting
-position of each window must be provided as well.
+position of each window must also be provided.
 GC content for each window is optional.
-If the data is in a dataframe like LS041, the easiest is to use the function
+If the data is in a dataframe like LS041, it is easiest to use the function
 \emph{dataFrame2object} to create a new object.
 
 <<>>=
@@ -54,15 +54,15 @@ CN <- dataFrame2object(LS041)
 @
 
 \section{Basic use}
-Here, we will demostrate a standard and robust set of instructions to obtain
-copy number profile without correcting for tumour content or ploidy
+Here, we will demostrate a standard and robust set of instructions for obtaining
+copy number profile without correcting for tumour content or ploidy.
 
 \subsection{GC-correction}
 
-GC correction is an optional but recommended step to reduce GC content sequencing biases.
+GC correction is an optional but recommended step to reduce GC content sequencing bias.
 
-Because of difficulty in correctly mapping reads to chromosome Y and M, we can
-flag and not to use them for the GC correction or ploidy detection.
+Because of the difficulty in correctly mapping reads to chromosome Y and M, we can
+flag them for exclusion from the GC correction or ploidy detection.
 
 <<>>=
 toSkip <- c("chrY", "chrM")
@@ -71,7 +71,7 @@ CN <- gcNorm(CN, exclude=toSkip)
 
 \subsection{From read count to copy number profiles}
 
-CNAnorm will try to detect ``states'' of copy number to perform normalisation.
+CNAnorm will try to detect ``states'' of copy number in order to perform normalisation.
 It is strongly recommended to smooth the signal\cite{huang2007a} to decrease noise without
 losing resolution.
 
@@ -87,10 +87,10 @@ CN <- peakPloidy(CN, exclude=toSkip, method='closest')
 
 `closest' is a robust normalisation method. It will not attempt to estimate
 ploidy and tumour content, but it will work with a wide range of samples,
-windows sizes, total number of reads, and so on. This method cope with
+windows sizes, total number of reads, and so on. This method can cope with
 heterogeneous, policlonal tumours. Once the user is more familiar with CNAnorm,
-method `density' or `mixture' can be used to estimate
-ploidy and tumour content if the analysed tuomor is largely monoclonal. See
+methods `density' or `mixture' can be used to estimate
+ploidy and tumour content if the analysed tumour is largely monoclonal. See
 section ``Advanced use'' 
 
 We can now visualise the distribution of reads.
@@ -113,7 +113,7 @@ CN <- addDNACopy(CN)
 CN <- discreteNorm(CN)
 @
 
-The steps above can be performed also with function CNAnormWorkflow that
+The above steps can be performed also with function CNAnormWorkflow that
 exposes most of the parameters of all functions with robust defaults.
 
 <<>>=
@@ -124,8 +124,8 @@ CNauto <- CNAnormWorkflow(LS041, gc.do=TRUE, gc.exclude=toSkip,
 identical(CN, CNauto)
 @
 
-Finally, we can plot copy number profile for the whole genome. As there is no
-assumtion on the species of the sample, we will use show.centromeres = FALSE
+Finally, we can plot the copy number profile for the whole genome. As there is no
+assumption about the species of the sample, we will use show.centromeres = FALSE
 
 \begin{center}
 <<fig=TRUE, echo=TRUE, width=7, hight=3>>=
@@ -133,9 +133,9 @@ plotGenome(CN, superimpose='DNACopy', show.centromeres=FALSE)
 @
 \end{center}
 
-We can also specify a set of chromosomes to show or a specific range.
+We can also specify a set of chromosomes to show, or a specific range.
 If the reference genome is the human genome (hg19), we can use built-in information
-to plot the location of centromeres
+to plot the location of centromeres.
 
 \begin{center}
 <<fig=TRUE, echo=TRUE, width=7, hight=3>>=
@@ -145,8 +145,9 @@ plotGenome(CN[subSet], superimpose='DNACopy')
 @
 \end{center}
 
-Several aspects of the plot can be customized (colors, point and line size and
-so on) by setting the desired value in object gPar and then passing it to plotGenome
+Several aspects of the plot can be customised (colours, point and line size,
+etc.) by setting the desired value in object gPar and then passing it to
+plotGenome
 
 \begin{center}
 <<fig=TRUE, echo=TRUE, width=7, hight=3>>=
@@ -183,16 +184,17 @@ plotPeaks(CN)
 @
 \end{center}
 
-We can now see that each peak has been assigned to an integer state and an estimation of 
-tumour content is provided. The vertical dotted red line shows the median value
+We can now see that each peak has been assigned to an integer state and an estimate of 
+tumour content is given. The vertical dotted red line shows the median value
 of the ratio. The blue labels (in the form ``BN $\rightarrow$ AN'') on top of each peak shows the ratio Before Normalisation
 and the ratio After Normalisation. Ploidy (plotted on the left axis of the genome plot), will be 2 * AN.
 The red circle is used to define ratio $=$ 1 on the right axes of the genome plot.
 
-We are also providing extra arguments to the segmentation engine: DNAcopy.weight and 
-DNAcopy.segment improve segmentation. These are particularly important if higher depth data is used to
-reduce false positive (oversegmentation). As the data is from human tumour samples, we can use
-built-in information about centromere location to perform segmentation on a per chrmosome arm basis
+We can also provide extra arguments to the segmentation engine: DNAcopy.weight and 
+DNAcopy.segment improve segmentation. These are particularly important if
+higher depth data is used in order to minimise false positives (oversegmentation).
+As the data is from human tumour samples, we can use
+built-in information about centromere location to perform segmentation on a per chromosome arm basis
 (independent.arms).
 
 
@@ -213,9 +215,9 @@ The genome wide copy number profile is now be mostly aligned to integer states.
 
 \subsection{Manual correction}
 
-The reported normalisation is very plausable. Let's assume, however, that the
+The reported normalisation is highly plausible. Let's assume, however, that the
 user knows that all chromosomes assigned to copy number 2 are in LOH
-(independent evidence) and/or that there are exaclty 2 copies of chr5 (by Fish)
+(independent evidence) and/or that there are exactly 2 copies of chr5 (by FISH)
 and/or that the tumour content is probably lower (pathologist report).  The
 user can thus ``shift'' the state up or down
 
@@ -226,7 +228,7 @@ plotPeaks(CN, show='validated')
 @
 \end{center}
 
-Ploidy has been shifted and a new tumour content estimation porvided.
+Ploidy has been shifted and a new tumour content estimation provided.
 We need to perform the normalisation once more and then we can plot the new copy number profile 
 
 \begin{center}

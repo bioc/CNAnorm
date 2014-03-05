@@ -30,8 +30,8 @@
 \item{DNAcopy.weight}{A character value of one of these values. 'poisson',
     'gaussian', 'twoTailQuantile', 'oneTailQuantile'. It specifies a way to give
     weight to each window depending on how much coverage in the normal deviates
-    from the median for that chromosome. Options are listed in decresing order
-    of stringensy. See Details}
+    from the median for that chromosome. Options are listed in decreasing order
+    of stringency. See Details}
 \item{DNAcopy.segment}{A list of parameters to be passed to function `segment` in package DNAcopy. Parameters `weights` and `verbose` are not accepted}
         
 }
