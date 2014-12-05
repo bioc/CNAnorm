@@ -1,3 +1,5 @@
+1.13.1: 2014-12-05 Fixed a bug in plotGenome related to drawing centromere when the first
+    chromosome does not start from 1
 1.9.2: Added support to pass arguments to DNAcopy functions smooth.CNA and segment 
     Added function CNAnormWorkflow
     Added window weighting (for segmentation) depending on dispersion.

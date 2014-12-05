@@ -260,7 +260,7 @@ cumGenPosition <- function (object){
             wCentr <- which(uChrs[i] == as.character(idiogram$chrom) & 
                 as.character(idiogram$gieStain) == "acen")
             centrm.location[i] <- idiogram$chromEnd[wCentr[1]] + 
-                min(xAxes[chrs(object) == uChrs[i]]) - 1
+                min(xAxes[chrs(object) == uChrs[i]]) - min(xAxes[chrs(object) == uChrs[1]])
         }
         abline(v = centrm.location, col = tPar$colors$centrm, lwd = tPar$lwd$centrm,
             lty = tPar$lty$centrm)
@@ -544,19 +544,15 @@ gcNormalize <- function (gcC, ratio, points2use = NULL, maxNumPoints = 10000) {
     # Returns a vector of the value of Loess Curve for all points in gcC. It
     #   keeps the same order as gcC. NA will be present where gcC is NA and
     #   where points2use is FALSE
-    validX <- which(!is.na(gcC) & ratio > 0 & !is.na(ratio))
+    validX <- which(!is.na(gcC) & !is.na(ratio))
     # check if all points are good or only some of them
     if (is.null(points2use)) {
         validGc <- validX
     } else {
-        validGc <- which(!is.na(gcC) & ratio > 0 & !is.na(ratio) & points2use)
+        validGc <- which(!is.na(gcC) & !is.na(ratio) & points2use)
     }   
     # if there are too many points, randomly select (maxNumPoints)
     if (length(validGc) > maxNumPoints ) { 
-#         TandF <- c(rep(TRUE, maxNumPoints), rep(FALSE, length(validGc) - maxNumPoints))
-#         randomNums <- runif(length(TandF))
-#         o <- order(randomNums)
-#         shuffle <- TandF[o]
         validGc <- sample(validGc, maxNumPoints)
     }   
     # make a data fram with relevant names (important!)
